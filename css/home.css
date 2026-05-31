@@ -1,0 +1,214 @@
+.home-page {
+  --shell-max-width: 1280px;
+  --shell-padding: 32px 20px;
+  --shell-gap: 24px;
+  --page-overlay: rgba(255, 248, 220, 0.34);
+  --unapi-sombra: 0 18px 38px rgba(63, 23, 72, 0.14);
+}
+
+.hero {
+  position: relative;
+  min-height: clamp(470px, 48vw, 570px);
+  border-radius: 10px;
+  overflow: hidden;
+  isolation: isolate;
+  box-shadow:
+    0 30px 58px rgba(63, 23, 72, 0.15),
+    0 14px 26px rgba(63, 23, 72, 0.1),
+    inset 0 0 0 1px rgba(84, 42, 88, 0.12);
+  border: none;
+  background-color: var(--unapi-card);
+  display: flex;
+  align-items: center;
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  z-index: 0;
+  background-image: url("../img/hero-mascote-unapi.webp");
+  background-size: cover;
+  background-position: center right;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  width: min(40%, 410px);
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(34px, 5vw, 62px);
+  padding-right: 24px;
+  background: rgba(255, 248, 220, 0.94);
+}
+
+.hero h1 {
+  color: var(--unapi-roxo);
+  font-size: clamp(36px, 5vw, 62px);
+  line-height: 0.94;
+  max-width: 300px;
+  margin-bottom: 0;
+}
+
+.title-highlight {
+  color: var(--unapi-amarelo);
+}
+
+.hero .title-end {
+  display: inline-block;
+  max-width: 285px;
+}
+
+.hub-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.hub-card {
+  position: relative;
+  min-height: 230px;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 22px;
+  text-decoration: none;
+  border-radius: var(--unapi-borda);
+  box-shadow: var(--unapi-sombra);
+  overflow: hidden;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+.hub-card::before {
+  content: "";
+  position: absolute;
+  left: 30px;
+  top: 0;
+  width: 78px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--unapi-amarelo);
+  z-index: 1;
+}
+
+.hub-card::after {
+  content: "";
+  position: absolute;
+  width: 116px;
+  height: 116px;
+  right: -36px;
+  top: -34px;
+  border-radius: 50%;
+  background: rgba(221, 182, 34, 0.2);
+}
+
+.hub-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 18px 38px rgba(84, 42, 88, 0.22);
+}
+
+.hub-card.primary {
+  background: var(--unapi-roxo);
+  color: var(--unapi-fundo);
+  border: 2px solid rgba(221, 182, 34, 0.28);
+}
+
+.hub-card.secondary {
+  background: var(--unapi-card);
+  color: var(--unapi-roxo);
+  border: 2px solid rgba(84, 42, 88, 0.22);
+}
+
+.hub-card-content {
+  position: relative;
+  z-index: 1;
+}
+
+.hub-card .tag {
+  background: rgba(221, 182, 34, 0.18);
+  color: var(--unapi-amarelo);
+  margin-bottom: 18px;
+}
+
+.hub-card.secondary .tag {
+  color: var(--unapi-roxo);
+  background: rgba(84, 42, 88, 0.08);
+}
+
+.hub-card h2 {
+  font-size: clamp(25px, 3vw, 34px);
+  line-height: 1.05;
+  margin-bottom: 12px;
+}
+
+.hub-card p {
+  max-width: 460px;
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+.hub-card.primary p {
+  color: rgba(255, 248, 220, 0.9);
+}
+
+.hub-card.secondary p {
+  color: var(--unapi-texto-suave);
+}
+
+.hub-card:hover .btn-visual {
+  background-color: var(--unapi-amarelo-hover);
+  transform: translateX(3px);
+}
+
+@media (max-width: 900px) {
+  .hero-content {
+    width: min(48%, 410px);
+  }
+
+  .hub-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .home-page {
+    --shell-padding: 20px 14px 24px;
+    --shell-gap: 20px;
+  }
+
+  .topbar,
+  .hub-card,
+  .institutional-footer {
+    border-radius: 18px;
+  }
+
+  .hero {
+    min-height: auto;
+    border-radius: 12px;
+    background: var(--unapi-card);
+  }
+
+  .hero::before {
+    display: none;
+  }
+
+  .hero-content,
+  .hub-card {
+    padding: 24px;
+  }
+
+  .hero-content {
+    width: 100%;
+    background: var(--unapi-card);
+  }
+
+  .hero h1 {
+    font-size: clamp(34px, 12vw, 48px);
+  }
+}

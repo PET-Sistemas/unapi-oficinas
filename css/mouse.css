@@ -1,0 +1,283 @@
+.mouse-page {
+  user-select: none;
+}
+
+.header-panel {
+  background-color: var(--unapi-roxo);
+  padding: 20px 40px;
+  border-radius: var(--unapi-borda);
+  box-shadow: var(--unapi-sombra);
+  z-index: 50;
+  min-width: 500px;
+  margin-bottom: 20px;
+  border: none;
+}
+
+.header-panel h1 {
+  color: var(--unapi-amarelo);
+  font-size: 26px;
+  margin-bottom: 15px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.instructions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 16px;
+  color: var(--unapi-fundo);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 15px 25px;
+  border-radius: 12px;
+  text-align: left;
+}
+
+.instructions span {
+  line-height: 1.4;
+}
+
+.instructions strong {
+  color: var(--unapi-amarelo);
+  margin-right: 5px;
+}
+
+.game-scale-area {
+  width: 100%;
+  max-width: 1100px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  overflow: visible;
+  position: relative;
+  z-index: 2;
+}
+
+#game-board {
+  width: 1100px;
+  height: 700px;
+  position: relative;
+  touch-action: none;
+  transform: scale(var(--game-scale));
+  transform-origin: top center;
+  flex: 0 0 auto;
+}
+
+.trunk-img {
+  position: absolute;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 420px;
+  width: auto;
+  pointer-events: none;
+  filter: drop-shadow(0 15px 15px rgba(0, 0, 0, 0.1));
+}
+
+.leaves-base {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 850px;
+  height: 95px;
+  background: rgba(0, 0, 0, 0.78);
+  border: 2px solid rgba(255, 248, 220, 0.35);
+  border-radius: 18px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+  z-index: 1;
+}
+
+.drop-zone {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  border: 3px dashed rgba(84, 42, 88, 0.4);
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
+}
+
+.drop-zone.hover {
+  border-color: #4caf50;
+  background-color: rgba(76, 175, 80, 0.2);
+  transform: scale(1.15);
+}
+
+.drop-zone.filled {
+  opacity: 0;
+}
+
+.leaf {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  cursor: grab;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  transition: transform 0.1s, background-color 0.3s, left 0.15s, top 0.15s;
+  z-index: 10;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+}
+
+.leaf:active {
+  cursor: grabbing;
+  transform: scale(1.15);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.leaf.purple {
+  background-color: var(--unapi-roxo);
+}
+
+.leaf.yellow {
+  background-color: var(--unapi-amarelo);
+}
+
+.leaf.snapped {
+  cursor: default;
+  box-shadow: none;
+}
+
+#success-message {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--unapi-fundo);
+  padding: 50px 70px;
+  border-radius: var(--unapi-borda);
+  border: 1px solid rgba(84, 42, 88, 0.2);
+  text-align: center;
+  z-index: 100;
+  box-shadow: var(--unapi-sombra);
+}
+
+#success-message h2 {
+  color: #4caf50;
+  font-size: 42px;
+  margin: 0 0 15px;
+}
+
+#success-message p {
+  font-size: 22px;
+  color: var(--unapi-roxo);
+}
+
+.btn-restart {
+  font-size: 20px;
+  padding: 12px 35px;
+  background-color: var(--unapi-roxo);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+  margin-top: 25px;
+  font-weight: bold;
+}
+
+.btn-restart:hover {
+  background-color: rgba(84, 42, 88, 0.85);
+  transform: translateY(-2px);
+}
+
+#zone1 {
+  top: 30px;
+  left: 240px;
+}
+
+#zone2 {
+  top: 100px;
+  left: 360px;
+}
+
+#zone3 {
+  top: 30px;
+  left: 480px;
+}
+
+#zone4 {
+  top: 100px;
+  left: 620px;
+}
+
+#zone5 {
+  top: 30px;
+  left: 740px;
+}
+
+#zone6 {
+  top: 100px;
+  left: 860px;
+}
+
+#leaf1 {
+  top: 625px;
+  left: 180px;
+}
+
+#leaf2 {
+  top: 625px;
+  left: 320px;
+}
+
+#leaf3 {
+  top: 625px;
+  left: 460px;
+}
+
+#leaf4 {
+  top: 625px;
+  left: 600px;
+}
+
+#leaf5 {
+  top: 625px;
+  left: 740px;
+}
+
+#leaf6 {
+  top: 625px;
+  left: 880px;
+}
+
+@media (max-height: 820px) {
+  .mouse-page {
+    justify-content: flex-start;
+    padding: 12px 16px;
+  }
+
+  .header-panel {
+    padding: 14px 28px;
+    margin-bottom: 10px;
+  }
+
+  .header-panel h1 {
+    font-size: 22px;
+    margin-bottom: 10px;
+  }
+
+  .instructions {
+    font-size: 14px;
+    gap: 6px;
+    padding: 10px 18px;
+  }
+}
+
+@media (max-width: 680px) {
+  .header-panel {
+    min-width: unset;
+    width: 100%;
+  }
+
+  .tool-page .logos-footer {
+    gap: 12px;
+  }
+
+  .tool-page .logos-footer img {
+    max-width: 105px;
+  }
+}
