@@ -355,7 +355,37 @@
       </header>
 
       <section class="videos-area" aria-label="Galeria de vídeos das oficinas">
-        <div class="video-gallery" id="video-gallery"></div>
+        <div class="video-gallery">
+          <a class="video-card" href="https://youtube.com/shorts/-jH6xlBCN_o?si=tamyI9VxZL70dKnA" target="_blank" rel="noopener noreferrer">
+            <img src="https://img.youtube.com/vi/-jH6xlBCN_o/hqdefault.jpg" alt="Primeira Oficina UnAPI" loading="lazy" />
+            <div class="play-button" aria-hidden="true">▶</div>
+            <div class="video-info">
+              <span class="video-tag">Short 01</span>
+              <h3>Primeira Oficina UnAPI</h3>
+              <p>Registro da oficina Conhecendo Teclado e Mouse.</p>
+            </div>
+          </a>
+
+          <a class="video-card" href="https://youtube.com/shorts/lQYpWqZ3yww?si=OILJJdqehTFEfZaW" target="_blank" rel="noopener noreferrer">
+            <img src="https://img.youtube.com/vi/lQYpWqZ3yww/hqdefault.jpg" alt="Participantes em atividade" loading="lazy" />
+            <div class="play-button" aria-hidden="true">▶</div>
+            <div class="video-info">
+              <span class="video-tag">Short 02</span>
+              <h3>Participantes em atividade</h3>
+              <p>Mais um momento da primeira oficina de informática.</p>
+            </div>
+          </a>
+
+          <a class="video-card" href="https://youtube.com/shorts/-2MqL9CBbF0?si=iCjgI73N79qkxGG" target="_blank" rel="noopener noreferrer">
+            <img src="https://img.youtube.com/vi/-2MqL9CBbF0/hqdefault.jpg" alt="Prática com acompanhamento" loading="lazy" />
+            <div class="play-button" aria-hidden="true">▶</div>
+            <div class="video-info">
+              <span class="video-tag">Short 03</span>
+              <h3>Prática com acompanhamento</h3>
+              <p>Novo registro das atividades realizadas durante a oficina.</p>
+            </div>
+          </a>
+        </div>
       </section>
 
       <footer class="institutional-footer" aria-label="Logos institucionais">
@@ -370,44 +400,5 @@
         <div class="footer-note">Portal das Oficinas de Informática • UNAPI UFMS</div>
       </footer>
     </main>
-
-    <script>
-      const videos = [
-        {
-          tag: "Short 01",
-          titulo: "Primeira Oficina UnAPI",
-          descricao: "Registro da oficina Conhecendo Teclado e Mouse.",
-          youtubeId: "-jH6xlBCN_o",
-          url: "https://youtube.com/shorts/-jH6xlBCN_o?si=tamyI9VxZL70dKnA",
-        },
-        {
-          tag: "Short 02",
-          titulo: "Participantes em atividade",
-          descricao: "Mais um momento da primeira oficina de informática.",
-          youtubeId: "lQYpWqZ3yww",
-          url: "https://youtube.com/shorts/lQYpWqZ3yww?si=OILJJdqehTFEfZaW",
-        },
-      ];
-
-      const gallery = document.getElementById("video-gallery");
-
-      videos.forEach((video) => {
-        const card = document.createElement("a");
-        card.className = "video-card";
-        card.href = video.url;
-        card.target = "_blank";
-        card.rel = "noopener noreferrer";
-        card.innerHTML = `
-          <img src="https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg" alt="${video.titulo}" loading="lazy" />
-          <div class="play-button" aria-hidden="true">▶</div>
-          <div class="video-info">
-            <span class="video-tag">${video.tag}</span>
-            <h3>${video.titulo}</h3>
-            <p>${video.descricao}</p>
-          </div>
-        `;
-        gallery.appendChild(card);
-      });
-    </script>
   </body>
 </html>
