@@ -274,21 +274,22 @@ const steps = [
           <strong class="document-preview">000.000.000-00</strong>
           <label for="new-secret">Nova senha</label>
           <div class="password-line">
-            <input id="new-secret" class="gov-input active-target" type="password" autocomplete="off" />
+            <input id="new-secret" class="gov-input active-target" type="password" autocomplete="off" aria-describedby="password-rules password-match" />
             <button type="button" aria-label="Mostrar senha" data-action="toggle-secret">◉</button>
           </div>
-          <ul class="password-rules">
-            <li class="ok">A senha deve ter mínimo de 8 caracteres</li>
-            <li class="ok">A senha deve ter pelo menos uma letra minúscula</li>
-            <li>A senha deve ter pelo menos uma letra maiúscula</li>
-            <li>A senha deve ter pelo menos um número</li>
-            <li>A senha deve ter pelo menos um símbolo</li>
+          <ul id="password-rules" class="password-rules">
+            <li data-password-rule="length">A senha deve ter mínimo de 8 caracteres</li>
+            <li data-password-rule="lowercase">A senha deve ter pelo menos uma letra minúscula</li>
+            <li data-password-rule="uppercase">A senha deve ter pelo menos uma letra maiúscula</li>
+            <li data-password-rule="number">A senha deve ter pelo menos um número</li>
+            <li data-password-rule="symbol">A senha deve ter pelo menos um símbolo</li>
           </ul>
           <label for="repeat-secret">Repita a senha</label>
           <div class="password-line">
-            <input id="repeat-secret" class="gov-input" type="password" placeholder="Repita a senha" autocomplete="off" />
+            <input id="repeat-secret" class="gov-input" type="password" placeholder="Repita a senha" autocomplete="off" aria-describedby="password-match" />
             <button type="button" aria-label="Mostrar senha" data-action="toggle-secret">◉</button>
           </div>
+          <p id="password-match" class="password-match" data-password-match aria-live="polite"></p>
         </section>
         ${actionBar("Concluir")}
       `
@@ -348,6 +349,52 @@ function prepareEditableMockup() {
       input.value = formatDocument(input.value);
     });
   });
+
+  preparePasswordValidation();
+}
+
+function getPasswordState(value) {
+  return {
+    length: value.length >= 8,
+    lowercase: /[a-z]/.test(value),
+    uppercase: /[A-Z]/.test(value),
+    number: /\d/.test(value),
+    symbol: /[^A-Za-z0-9]/.test(value),
+  };
+}
+
+function preparePasswordValidation() {
+  const passwordInput = mockupElement.querySelector("#new-secret");
+  const repeatInput = mockupElement.querySelector("#repeat-secret");
+  if (!passwordInput || !repeatInput) return;
+
+  const updatePasswordState = () => {
+    const password = passwordInput.value;
+    const repeat = repeatInput.value;
+    const state = getPasswordState(password);
+
+    mockupElement.querySelectorAll("[data-password-rule]").forEach((rule) => {
+      const isValid = Boolean(state[rule.dataset.passwordRule]);
+      rule.classList.toggle("ok", isValid);
+    });
+
+    const matchElement = mockupElement.querySelector("[data-password-match]");
+    if (!matchElement) return;
+
+    matchElement.classList.remove("ok", "error");
+    if (!repeat) {
+      matchElement.textContent = "";
+      return;
+    }
+
+    const passwordsMatch = password === repeat;
+    matchElement.textContent = passwordsMatch ? "As senhas conferem." : "As senhas não conferem.";
+    matchElement.classList.add(passwordsMatch ? "ok" : "error");
+  };
+
+  passwordInput.addEventListener("input", updatePasswordState);
+  repeatInput.addEventListener("input", updatePasswordState);
+  updatePasswordState();
 }
 
 function selectGroupedOption(option) {

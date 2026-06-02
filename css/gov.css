@@ -629,6 +629,22 @@
   content: "✓ ";
 }
 
+.password-match {
+  min-height: 18px;
+  margin-top: 8px;
+  color: #c02f2f;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.password-match.ok {
+  color: #168821;
+}
+
+.password-match.error {
+  color: #c02f2f;
+}
+
 .success-form {
   display: grid;
   justify-items: center;
