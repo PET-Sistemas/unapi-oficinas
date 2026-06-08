@@ -4,307 +4,61 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Portal UnAPI - Oficinas de Informática</title>
-    <style>
-      :root {
-        --unapi-fundo: #fff8dc;
-        --unapi-roxo: #542a58;
-        --unapi-amarelo: #ddb622;
-        --unapi-amarelo-hover: #e6c543;
-        --unapi-sombra: 0 8px 20px rgba(0, 0, 0, 0.15);
-        --unapi-borda: 20px;
-        --unapi-fonte: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      }
-
-      * { box-sizing: border-box; margin: 0; padding: 0; }
-
-      body {
-        position: relative;
-        overflow-x: hidden;
-        background-color: var(--unapi-fundo);
-        background-image: url("img/background-unapi.svg");
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        background-attachment: fixed;
-        color: var(--unapi-roxo);
-        font-family: var(--unapi-fonte);
-        margin: 0;
-        padding: 48px 20px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        min-height: 100vh;
-      }
-
-      .page-shell {
-        position: relative;
-        z-index: 2;
-        width: 100%;
-        max-width: 1120px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 34px;
-      }
-
-      .header-panel {
-        background: rgba(84, 42, 88, 0.96);
-        color: var(--unapi-fundo);
-        padding: 30px 48px;
-        border-radius: var(--unapi-borda);
-        box-shadow: var(--unapi-sombra);
-        text-align: center;
-        width: 100%;
-        max-width: 760px;
-        border: 1px solid rgba(221, 182, 34, 0.32);
-        position: relative;
-        overflow: hidden;
-      }
-
-      .header-panel::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background:
-          radial-gradient(circle at 18% 18%, rgba(221, 182, 34, 0.22), transparent 28%),
-          linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 50%);
-        pointer-events: none;
-      }
-
-      .header-panel h1,
-      .header-panel p,
-      .intro-label { position: relative; z-index: 1; }
-
-      .header-panel h1 {
-        color: var(--unapi-amarelo);
-        font-size: clamp(30px, 4vw, 44px);
-        margin-bottom: 10px;
-        font-weight: 800;
-        letter-spacing: -0.5px;
-      }
-
-      .header-panel p {
-        font-size: clamp(17px, 2vw, 20px);
-        color: var(--unapi-fundo);
-        line-height: 1.45;
-      }
-
-      .intro-label {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 14px;
-        padding: 8px 16px;
-        border-radius: 999px;
-        background: rgba(221, 182, 34, 0.16);
-        color: var(--unapi-amarelo);
-        font-size: 14px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-      }
-
-      .grid-container {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 26px;
-        width: 100%;
-      }
-
-      .card {
-        background: rgba(255, 248, 220, 0.94);
-        border: 2px solid rgba(84, 42, 88, 0.18);
-        border-radius: var(--unapi-borda);
-        padding: 32px;
-        min-height: 255px;
-        text-decoration: none;
-        color: inherit;
-        transition: all 0.25s ease;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        align-items: flex-start;
-        text-align: left;
-        box-shadow: var(--unapi-sombra);
-        position: relative;
-        overflow: hidden;
-      }
-
-      .card::before {
-        content: "";
-        width: 86px;
-        height: 86px;
-        border-radius: 50%;
-        background: rgba(221, 182, 34, 0.18);
-        position: absolute;
-        top: -26px;
-        right: -20px;
-      }
-
-      .card::after {
-        content: "";
-        width: 78px;
-        height: 5px;
-        border-radius: 999px;
-        background: var(--unapi-amarelo);
-        position: absolute;
-        left: 32px;
-        top: 0;
-      }
-
-      .card:hover {
-        transform: translateY(-6px);
-        border-color: var(--unapi-roxo);
-        background: rgba(255, 253, 242, 0.98);
-        box-shadow: 0 16px 34px rgba(84, 42, 88, 0.22);
-      }
-
-      .card-content { position: relative; z-index: 1; }
-
-      .card h2 {
-        color: var(--unapi-roxo);
-        margin: 0 0 14px 0;
-        font-size: 27px;
-        line-height: 1.15;
-      }
-
-      .card p {
-        color: rgba(84, 42, 88, 0.78);
-        margin: 0;
-        font-size: 17px;
-        line-height: 1.55;
-      }
-
-      .btn-visual {
-        background-color: var(--unapi-amarelo);
-        color: var(--unapi-roxo);
-        padding: 13px 24px;
-        border-radius: 12px;
-        font-weight: 800;
-        font-size: 15px;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        transition: all 0.25s ease;
-        margin-top: 28px;
-        box-shadow: 0 7px 16px rgba(84, 42, 88, 0.15);
-        position: relative;
-        z-index: 1;
-      }
-
-      .card:hover .btn-visual {
-        background-color: var(--unapi-amarelo-hover);
-        transform: translateX(4px);
-      }
-
-      .institutional-footer {
-        width: 100%;
-        margin-top: 4px;
-        padding: 18px 22px;
-        border-radius: var(--unapi-borda);
-        background: rgba(255, 248, 220, 0.92);
-        border: 1px solid rgba(84, 42, 88, 0.16);
-        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.08);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 12px;
-      }
-
-      .footer-note {
-        color: rgba(84, 42, 88, 0.78);
-        font-size: 14px;
-        text-align: center;
-      }
-
-      .logos-footer {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: clamp(14px, 2.3vw, 28px);
-        flex-wrap: wrap;
-      }
-
-      .logos-footer img {
-        max-height: 44px;
-        max-width: 150px;
-        width: auto;
-        object-fit: contain;
-        filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.08));
-      }
-
-      .logos-footer img.logo-gov { max-height: 38px; max-width: 170px; }
-      .logos-footer img.logo-unapi,
-      .logos-footer img.logo-pet-computacao { max-height: 50px; }
-
-      @media (max-width: 720px) {
-        body { padding: 30px 16px; background-attachment: scroll; }
-        .header-panel { padding: 26px 24px; }
-        .grid-container { grid-template-columns: 1fr; }
-        .card { min-height: auto; padding: 28px; }
-        .institutional-footer { padding: 16px 14px; gap: 10px; }
-        .logos-footer { gap: 12px 16px; }
-        .logos-footer img { max-height: 34px; max-width: 118px; }
-        .logos-footer img.logo-gov { max-height: 30px; }
-      }
-    </style>
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/home.css" />
   </head>
-  <body>
+  <body class="home-page portal-page has-page-overlay">
     <main class="page-shell">
-      <div class="header-panel">
-        <div class="intro-label">UNAPI UFMS</div>
-        <h1>Ambiente de Aprendizagem</h1>
-        <p>Selecione a oficina que deseja praticar hoje.</p>
-      </div>
+      <header class="topbar" aria-label="Cabeçalho do portal">
+        <div class="brand">
+          <small>UNAPI UFMS</small>
+          <strong>Oficinas de Informática</strong>
+        </div>
 
-      <div class="grid-container" id="link-container"></div>
+        <nav class="topnav" aria-label="Navegação principal">
+          <a href="ferramentas/">Ferramentas</a>
+          <a href="videos/">Vídeos</a>
+        </nav>
+      </header>
+
+      <section class="hero" aria-label="Apresentação do portal">
+        <div class="hero-content">
+          <span class="eyebrow">Ambiente de aprendizagem</span>
+          <h1><span class="title-highlight">Pratique,</span><br />revise e<br /><span class="title-highlight">acompanhe</span><br /><span class="title-end">as oficinas.</span></h1>
+        </div>
+      </section>
+
+      <section class="hub-grid" aria-label="Áreas do portal">
+        <a class="hub-card primary" href="ferramentas/">
+          <div class="hub-card-content">
+            <span class="tag">Praticar</span>
+            <h2>Ferramentas e Materiais</h2>
+            <p>Entre nas atividades de teclado e mouse ou acesse materiais de apoio da oficina.</p>
+          </div>
+          <span class="btn-visual">Acessar</span>
+        </a>
+
+        <a class="hub-card secondary" href="videos/">
+          <div class="hub-card-content">
+            <span class="tag">Registros</span>
+            <h2>Vídeos das Oficinas</h2>
+            <p>Veja os Shorts e registros publicados dos encontros realizados com os participantes.</p>
+          </div>
+          <span class="btn-visual">Ver vídeos</span>
+        </a>
+      </section>
 
       <footer class="institutional-footer" aria-label="Logos institucionais">
         <div class="logos-footer">
-          <img src="img/ufms.png" alt="UFMS" />
-          <img class="logo-unapi" src="img/unapi.png" alt="UnAPI" />
-          <img class="logo-gov" src="img/gov-federal.png" alt="Governo Federal" />
-          <img src="img/facom.png" alt="FACOM" />
-          <img src="img/pet-sistemas.png" alt="PET Sistemas" />
-          <img class="logo-pet-computacao" src="img/pet-computacao.png" alt="PET Computação" />
+          <img src="img/ufms.webp" alt="UFMS" />
+          <img class="logo-unapi" src="img/unapi.webp" alt="UnAPI" />
+          <img class="logo-gov" src="img/gov-federal.webp" alt="Governo Federal" />
+          <img src="img/facom.webp" alt="FACOM" />
+          <img src="img/pet-sistemas.webp" alt="PET Sistemas" />
+          <img class="logo-pet-computacao" src="img/pet-computacao.webp" alt="PET Computação" />
         </div>
         <div class="footer-note">Portal das Oficinas de Informática • UNAPI UFMS</div>
       </footer>
     </main>
-
-    <script>
-      const oficinas = [
-        {
-          titulo: "Conhecendo o Teclado",
-          descricao:
-            "Pratique a digitação livremente e conheça as famílias de teclas de forma interativa.",
-          url: "teclado/",
-        },
-        {
-          titulo: "Conhecendo o Mouse",
-          descricao:
-            "Treine a coordenação motora com cliques, arrasto e barra de rolagem usando o mouse.",
-          url: "mouse/",
-        },
-      ];
-
-      const container = document.getElementById("link-container");
-
-      oficinas.forEach((oficina) => {
-        const card = document.createElement("a");
-        card.href = oficina.url;
-        card.className = "card";
-        card.target = "_self";
-        card.innerHTML = `
-          <div class="card-content">
-            <h2>${oficina.titulo}</h2>
-            <p>${oficina.descricao}</p>
-          </div>
-          <div class="btn-visual">Acessar Oficina</div>
-        `;
-        container.appendChild(card);
-      });
-    </script>
   </body>
 </html>
