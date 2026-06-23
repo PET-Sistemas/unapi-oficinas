@@ -41,7 +41,6 @@
 }
 
 .challenge-app {
-  min-height: 620px;
   border: 1px solid rgba(84, 42, 88, 0.16);
   border-radius: var(--unapi-borda);
   background: rgba(255, 255, 255, 0.96);
@@ -50,7 +49,6 @@
 }
 
 .challenge-view {
-  min-height: 620px;
   padding: clamp(24px, 4vw, 48px);
 }
 
@@ -60,8 +58,7 @@
 }
 
 .challenge-eyebrow,
-.channel-label,
-.simulation-label {
+.channel-label {
   display: inline-flex;
   width: fit-content;
   padding: 7px 11px;
@@ -190,7 +187,7 @@
 .challenge-intro {
   display: grid;
   align-content: center;
-  min-height: 620px;
+  min-height: clamp(390px, 52vh, 540px);
   background:
     radial-gradient(circle at 90% 15%, rgba(221, 182, 34, 0.2), transparent 26%),
     linear-gradient(135deg, rgba(84, 42, 88, 0.06), transparent 56%);
@@ -201,7 +198,6 @@
 }
 
 .challenge-selection-header,
-.scenario-topline,
 .result-topline,
 .final-topline {
   display: flex;
@@ -211,7 +207,6 @@
 }
 
 .challenge-selection-title,
-.scenario-heading,
 .result-title,
 .final-title {
   margin-bottom: 12px;
@@ -221,7 +216,6 @@
 }
 
 .challenge-selection-copy,
-.scenario-summary,
 .result-copy,
 .final-copy {
   max-width: 660px;
@@ -232,28 +226,28 @@
 
 .challenge-progress {
   flex: 0 0 auto;
-  display: grid;
-  gap: 6px;
-  min-width: 185px;
-  padding: 13px 15px;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 11px;
   border: 1px solid rgba(84, 42, 88, 0.16);
-  border-radius: 12px;
+  border-radius: 999px;
   background: #ffffff;
   color: var(--unapi-roxo);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 900;
-  text-align: center;
+  line-height: 1.1;
 }
 
 .progress-dots {
   display: flex;
   justify-content: center;
-  gap: 6px;
+  gap: 5px;
 }
 
 .progress-dots span {
-  width: 24px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 999px;
   background: rgba(84, 42, 88, 0.15);
 }
@@ -270,7 +264,7 @@
 }
 
 .scenario-card {
-  min-height: 270px;
+  min-height: 220px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -346,20 +340,73 @@
   text-transform: uppercase;
 }
 
-.scenario-shell {
+.scenario-view {
   display: grid;
-  grid-template-columns: minmax(380px, 1.1fr) minmax(300px, 0.9fr);
-  gap: clamp(24px, 4vw, 48px);
+  gap: 24px;
+}
+
+.scenario-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 20px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid rgba(84, 42, 88, 0.14);
+}
+
+.scenario-heading {
+  max-width: 760px;
+  margin: 11px 0 8px;
+  color: var(--unapi-roxo-escuro);
+  font-size: clamp(30px, 3.25vw, 44px);
+  line-height: 1.08;
+}
+
+.scenario-summary {
+  max-width: 680px;
+  color: var(--unapi-texto-suave);
+  font-size: 17px;
+  line-height: 1.45;
+}
+
+.scenario-header-meta {
+  display: grid;
+  justify-items: end;
+  gap: 10px;
+}
+
+.scenario-return {
+  padding: 5px 0;
+  border: 0;
+  background: transparent;
+  color: var(--unapi-roxo);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.scenario-return:hover {
+  color: var(--unapi-roxo-escuro);
+  text-decoration: underline;
+}
+
+.scenario-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(340px, 0.85fr);
+  gap: 24px;
   align-items: start;
 }
 
-.scenario-side {
-  display: grid;
-  gap: 18px;
+.scenario-content,
+.scenario-decision {
+  min-width: 0;
 }
 
-.scenario-topline {
-  margin-bottom: 22px;
+.scenario-decision {
+  display: grid;
+  align-content: start;
+  gap: 16px;
 }
 
 .channel-label.whatsapp {
@@ -377,40 +424,15 @@
   color: var(--security-sms);
 }
 
-.simulation-label {
-  background: var(--security-yellow-soft);
-  color: #715700;
-}
-
-.rule-mini {
-  padding: 15px 17px;
-  border-left: 6px solid var(--unapi-amarelo);
-  border-radius: 0 12px 12px 0;
-  background: var(--security-yellow-soft);
-  color: #5e4a00;
-  font-size: 15px;
-  font-weight: 900;
-  line-height: 1.45;
-}
-
 .decision-panel {
-  padding: 20px;
-  border: 1px solid var(--security-line);
-  border-radius: 16px;
-  background: #ffffff;
+  display: grid;
+  gap: 14px;
 }
 
-.decision-panel h3 {
-  margin-bottom: 8px;
+.decision-panel h2 {
   color: var(--unapi-roxo-escuro);
-  font-size: 20px;
-}
-
-.decision-panel > p {
-  margin-bottom: 14px;
-  color: var(--security-muted);
-  font-size: 15px;
-  line-height: 1.4;
+  font-size: 22px;
+  line-height: 1.2;
 }
 
 .decision-grid {
@@ -420,6 +442,8 @@
 
 .decision-button {
   min-height: 58px;
+  width: 100%;
+  justify-content: flex-start;
   border-color: rgba(84, 42, 88, 0.22);
   background: #ffffff;
   color: var(--unapi-roxo-escuro);
@@ -463,14 +487,8 @@
   color: #761f1f;
 }
 
-.scenario-navigation {
-  display: flex;
-  justify-content: flex-end;
-}
-
 /* WhatsApp educativo */
 .whatsapp-sim {
-  min-height: 510px;
   overflow: hidden;
   border: 1px solid #c6d8ce;
   border-radius: 18px;
@@ -512,7 +530,7 @@
 }
 
 .chat-messages {
-  min-height: 410px;
+  min-height: 236px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -574,7 +592,6 @@
 
 /* E-mail educativo */
 .email-sim {
-  min-height: 510px;
   overflow: hidden;
   border: 1px solid var(--security-line);
   border-radius: 18px;
@@ -601,21 +618,9 @@
   letter-spacing: -0.06em;
 }
 
-.email-simulation-chip {
-  padding: 5px 9px;
-  border-radius: 999px;
-  background: var(--security-blue-soft);
-  color: var(--security-blue);
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
 .email-layout {
   display: grid;
   grid-template-columns: 125px 1fr;
-  min-height: 452px;
 }
 
 .email-sidebar {
@@ -721,45 +726,42 @@
 }
 
 .link-preview {
-  display: block;
-  min-height: 20px;
+  display: none;
+  margin-top: 7px;
   color: #5f6368;
   font-size: 11px;
-  opacity: 0;
+  overflow-wrap: anywhere;
 }
 
-.fake-email-link:hover + .link-preview,
-.fake-email-link:focus + .link-preview {
-  opacity: 1;
+.link-preview.visible {
+  display: block;
 }
 
-.email-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 22px;
-}
-
-.email-action {
-  min-height: 38px;
-  padding: 8px 11px;
-  border: 1px solid var(--security-line);
-  border-radius: 8px;
-  background: #ffffff;
-  color: #3c4043;
+.link-address-toggle {
+  display: block;
+  margin-top: 10px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #245ca6;
+  font: inherit;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 900;
+  text-decoration: underline;
   cursor: pointer;
 }
 
-.email-action:hover {
-  border-color: var(--security-blue);
+.email-reply {
+  margin-top: 16px;
+  padding: 12px;
+  border-left: 4px solid var(--security-blue);
   background: var(--security-blue-soft);
 }
 
 /* SMS educativo */
 .sms-sim {
-  min-height: 510px;
+  width: min(100%, 460px);
+  margin: 0 auto;
   overflow: hidden;
   border: 8px solid #25313f;
   border-radius: 28px;
@@ -794,7 +796,7 @@
 }
 
 .sms-messages {
-  min-height: 388px;
+  min-height: 250px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -828,11 +830,12 @@
 
 /* Páginas falsas e resultados */
 .fake-site {
-  min-height: 510px;
   display: grid;
-  align-content: center;
+  align-content: start;
   gap: 18px;
   padding: 28px;
+  border: 1px solid var(--security-line);
+  border-radius: 18px;
   background: linear-gradient(145deg, #f5f7fa, #ffffff);
 }
 
@@ -843,7 +846,7 @@
   letter-spacing: -0.05em;
 }
 
-.fake-site h3 {
+.fake-site h2 {
   color: #202124;
   font-size: 26px;
 }
@@ -885,9 +888,7 @@
 
 .scenario-result {
   display: grid;
-  align-content: center;
   gap: 20px;
-  min-height: 620px;
 }
 
 .result-symbol {
@@ -956,9 +957,7 @@
 
 .final-view {
   display: grid;
-  align-content: center;
   gap: 22px;
-  min-height: 620px;
   background:
     radial-gradient(circle at 88% 14%, rgba(221, 182, 34, 0.22), transparent 25%),
     linear-gradient(145deg, rgba(84, 42, 88, 0.06), transparent 55%);
@@ -1031,12 +1030,19 @@
     min-height: 0;
   }
 
-  .scenario-shell {
+  .scenario-header {
     grid-template-columns: 1fr;
   }
 
-  .scenario-side {
-    order: -1;
+  .scenario-header-meta {
+    justify-items: start;
+    grid-auto-flow: column;
+    justify-content: start;
+    align-items: center;
+  }
+
+  .scenario-workspace {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -1048,7 +1054,6 @@
 
   .challenge-app,
   .challenge-view,
-  .challenge-intro,
   .scenario-result,
   .final-view {
     min-height: 0;
@@ -1059,23 +1064,26 @@
   }
 
   .challenge-selection-header,
-  .scenario-topline,
   .result-topline,
   .final-topline {
     align-items: stretch;
     flex-direction: column;
   }
 
-  .challenge-progress {
-    width: 100%;
+  .scenario-header-meta {
+    grid-auto-flow: row;
+    justify-items: start;
+    align-items: start;
   }
 
   .rule-banner {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, 1fr);
+    margin: 24px 0;
   }
 
   .rule-banner span {
-    padding: 12px;
+    padding: 12px 6px;
+    font-size: 13px;
   }
 
   .challenge-action,
@@ -1093,28 +1101,40 @@
   }
 
   .email-sidebar {
-    display: flex;
-    gap: 6px;
+    display: block;
     padding: 9px;
     border-right: 0;
     border-bottom: 1px solid var(--security-line);
-    overflow: auto;
   }
 
   .email-sidebar span {
-    flex: 0 0 auto;
     margin: 0;
+  }
+
+  .email-sidebar span:not(.active) {
+    display: none;
+  }
+
+  .email-message {
+    padding: 16px;
+  }
+
+  .sender-row {
+    grid-template-columns: 34px minmax(0, 1fr);
+  }
+
+  .email-date {
+    grid-column: 2;
+  }
+
+  .chat-messages,
+  .sms-messages {
+    min-height: 0;
+    padding: 16px;
   }
 
   .sms-sim {
     border-width: 6px;
-  }
-
-  .whatsapp-sim,
-  .email-sim,
-  .sms-sim,
-  .fake-site {
-    min-height: 460px;
   }
 }
 

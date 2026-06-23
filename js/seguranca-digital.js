@@ -7,6 +7,7 @@ let activeScenario = null;
 let scenarioStage = "start";
 let typingTimeout = null;
 let emailAddressExpanded = false;
+let emailLinkExpanded = false;
 
 const scenarioData = {
   whatsapp: {
@@ -64,18 +65,37 @@ function clearTypingTimeout() {
   }
 }
 
-function focusChallengeTitle() {
-  const title = challengeApp.querySelector("[data-challenge-title]");
-  if (!title) return;
-
-  title.setAttribute("tabindex", "-1");
-  title.focus({ preventScroll: true });
+function prefersReducedMotion() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-function render(content, announcement = "") {
+function focusElement(selector = "[data-challenge-title]") {
+  const element = challengeApp.querySelector(selector);
+  if (!element) return;
+
+  element.setAttribute("tabindex", "-1");
+  element.focus({ preventScroll: true });
+}
+
+function render(content, announcement = "", options = {}) {
+  const {
+    focusSelector = "[data-challenge-title]",
+    scrollSelector = "",
+  } = options;
+
   challengeApp.innerHTML = content;
   announce(announcement);
-  requestAnimationFrame(focusChallengeTitle);
+  requestAnimationFrame(() => {
+    focusElement(focusSelector);
+
+    if (!scrollSelector) return;
+
+    const scrollTarget = challengeApp.querySelector(scrollSelector);
+    scrollTarget?.scrollIntoView({
+      behavior: prefersReducedMotion() ? "auto" : "smooth",
+      block: "start",
+    });
+  });
 }
 
 function ruleBanner() {
@@ -114,7 +134,7 @@ function renderIntro() {
       <span class="challenge-eyebrow">Segurança digital</span>
       <h1 class="challenge-title" data-challenge-title>Desafio Antigolpe</h1>
       <p class="challenge-lead">
-        Você recebeu uma mensagem inesperada. Ela é verdadeira ou é uma tentativa de golpe?
+        Analise mensagens suspeitas no WhatsApp, e-mail e SMS.
       </p>
       ${ruleBanner()}
       <button type="button" class="challenge-action" data-action="start">Começar desafio</button>
@@ -169,34 +189,37 @@ function renderSelection() {
   `, "Escolha um desafio para praticar.");
 }
 
-function scenarioSide(channel, title, summary, decisionTitle, decisionCopy, decisions, feedback = "") {
+function scenarioLayout(channel, title, summary, content, decisionTitle, decisions, feedback = "") {
   return `
-    <aside class="scenario-side">
-      <div class="scenario-topline">
+    <section class="challenge-view scenario-view">
+      <header class="scenario-header">
         <div>
           <span class="channel-label ${channel}">${scenarioData[channel].label}</span>
           <h1 class="scenario-heading" data-challenge-title>${title}</h1>
           <p class="scenario-summary">${summary}</p>
         </div>
-        ${progressCard()}
+        <div class="scenario-header-meta">
+          ${progressCard()}
+          <button type="button" class="scenario-return" data-action="back-selection">← Voltar aos desafios</button>
+        </div>
+      </header>
+      <div class="scenario-workspace">
+        <section class="scenario-content">${content}</section>
+        <aside class="scenario-decision">
+          ${feedback}
+          ${
+            decisions.length
+              ? `
+                <section class="decision-panel" aria-label="Decisão do desafio">
+                  <h2>${decisionTitle}</h2>
+                  <div class="decision-grid">${decisions.join("")}</div>
+                </section>
+              `
+              : ""
+          }
+        </aside>
       </div>
-      <p class="rule-mini">PARE antes de responder. CONFIRA por um contato ou canal oficial. DECIDA só depois.</p>
-      ${feedback}
-      ${
-        decisions.length
-          ? `
-            <section class="decision-panel" aria-label="Decisão do desafio">
-              <h3>${decisionTitle}</h3>
-              <p>${decisionCopy}</p>
-              <div class="decision-grid">${decisions.join("")}</div>
-            </section>
-          `
-          : ""
-      }
-      <div class="scenario-navigation">
-        <button type="button" class="mini-action secondary" data-action="back-selection">Voltar aos desafios</button>
-      </div>
-    </aside>
+    </section>
   `;
 }
 
@@ -204,9 +227,9 @@ function decisionButton(label, action, value = "") {
   return `<button type="button" class="decision-button" data-action="${action}" ${value ? `data-value="${value}"` : ""}>${label}</button>`;
 }
 
-function messageBubble(text, type = "incoming", time = "10:12") {
+function messageBubble(text, type = "incoming", time = "10:12", isNew = false) {
   return `
-    <div class="message-bubble ${type}">
+    <div class="message-bubble ${type}" ${isNew ? "data-new-message" : ""}>
       ${text}
       <span class="message-time">${time}</span>
     </div>
@@ -230,7 +253,7 @@ function renderWhatsapp() {
   }
 
   if (scenarioStage === "pix") {
-    responses.push(messageBubble("Pode mandar para esta conta. Ela está no nome de um amigo meu porque meu banco está com problema.", "incoming", "10:15"));
+    responses.push(messageBubble("Pode mandar para esta conta. Ela está no nome de um amigo meu porque meu banco está com problema.", "incoming", "10:15", true));
     feedback = '<div class="feedback-card caution"><strong>Sinal de golpe encontrado</strong>A conversa avançou para o pagamento. Conta em nome de outra pessoa é um sinal importante de alerta.</div>';
     decisions = [
       decisionButton("Fazer o pagamento", "whatsapp-choice", "pay"),
@@ -239,7 +262,7 @@ function renderWhatsapp() {
   }
 
   if (scenarioStage === "audio") {
-    responses.push(messageBubble("Agora não consigo falar. O microfone deste celular está quebrado. É urgente!", "incoming", "10:15"));
+    responses.push(messageBubble("Agora não consigo falar. O microfone deste celular está quebrado. É urgente!", "incoming", "10:15", true));
     feedback = '<div class="feedback-card caution"><strong>Atenção</strong>O golpista criou uma desculpa e manteve a urgência. Um áudio também pode ser falso ou reaproveitado.</div>';
     decisions = [
       decisionButton("Continuar acreditando", "whatsapp-choice", "believe"),
@@ -254,7 +277,6 @@ function renderWhatsapp() {
         <span class="chat-avatar" aria-hidden="true">F</span>
         <div>
           <strong>Filho — número novo</strong>
-          <small>Simulação educativa</small>
         </div>
       </header>
       <div class="chat-messages">
@@ -265,28 +287,28 @@ function renderWhatsapp() {
     </section>
   `;
 
-  render(`
-    <section class="challenge-view">
-      <div class="scenario-shell">
-        <div>${conversation}</div>
-        ${scenarioSide(
-          "whatsapp",
-          "Mensagem de familiar ou golpe?",
-          "A pessoa diz ter trocado de número e pede um Pix com urgência.",
-          "O que você responderia?",
-          "Escolha uma resposta pronta para ver como a conversa evolui.",
-          decisions,
-          feedback
-        )}
-      </div>
-    </section>
-  `, isWaiting ? "O contato está digitando uma nova mensagem." : "Analise a conversa antes de responder.");
+  render(
+    scenarioLayout(
+      "whatsapp",
+      "Mensagem de familiar ou golpe?",
+      "Número novo e pedido de Pix com urgência.",
+      conversation,
+      scenarioStage === "decision" ? "O que você faria?" : "E agora, o que você faria?",
+      decisions,
+      feedback
+    ),
+    isWaiting ? "O contato está digitando uma nova mensagem." : "Analise a conversa antes de responder.",
+    {
+      focusSelector: scenarioStage === "pix" || scenarioStage === "audio" ? "[data-new-message]" : "[data-challenge-title]",
+      scrollSelector: scenarioStage === "pix" || scenarioStage === "audio" ? "[data-new-message]" : "[data-challenge-title]",
+    }
+  );
 }
 
 function startWhatsapp() {
   scenarioStage = "waiting";
   renderWhatsapp();
-  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const reducedMotion = prefersReducedMotion();
   typingTimeout = window.setTimeout(() => {
     typingTimeout = null;
     if (activeScenario === "whatsapp" && scenarioStage === "waiting") {
@@ -296,11 +318,12 @@ function startWhatsapp() {
   }, reducedMotion ? 0 : 700);
 }
 
-function renderEmail() {
-  const showAddress = emailAddressExpanded || scenarioStage === "reply";
+function renderEmail(renderOptions = {}) {
+  const showAddress = emailAddressExpanded;
+  const showLinkAddress = emailLinkExpanded;
   const isReply = scenarioStage === "reply";
   const feedback = isReply
-    ? '<div class="feedback-card caution"><strong>Atenção</strong>Responder mantém o contato com o golpista. A própria resposta tenta empurrar você novamente para o link.</div>'
+    ? '<div class="feedback-card caution"><strong>Atenção</strong>Responder manteve o contato e trouxe mais pressão para usar o link.</div>'
     : "";
   const decisions = isReply
     ? [
@@ -319,7 +342,6 @@ function renderEmail() {
     <section class="email-sim" aria-label="E-mail simulado">
       <header class="email-topbar">
         <span class="email-wordmark">e-mail</span>
-        <span class="email-simulation-chip">Simulação</span>
       </header>
       <div class="email-layout">
         <aside class="email-sidebar" aria-label="Pastas ilustrativas">
@@ -343,68 +365,67 @@ function renderEmail() {
             <p>Para evitar o bloqueio, confirme seus dados imediatamente.</p>
             <p>Você tem 30 minutos para concluir a verificação.</p>
             <button type="button" class="fake-email-link" data-action="email-choice" data-value="link">VERIFICAR CONTA AGORA</button>
-            <span class="link-preview" aria-live="polite">Destino simulado: conta-segura.example/verificar</span>
-            ${isReply ? '<p><strong>Resposta simulada:</strong> Para evitar o bloqueio, use somente o botão enviado. Não podemos confirmar sua conta por outro canal.</p>' : ""}
-          </div>
-          <div class="email-actions">
-            <button type="button" class="email-action" data-action="email-choice" data-value="reply">Responder</button>
-            <button type="button" class="email-action" data-action="email-choice" data-value="report">Denunciar phishing</button>
-            <button type="button" class="email-action" data-action="email-choice" data-value="official">Abrir canal oficial</button>
+            <button type="button" class="link-address-toggle" data-action="email-link-address" aria-expanded="${showLinkAddress}" aria-controls="email-link-address">
+              ${showLinkAddress ? "Ocultar endereço do link" : "Ver endereço do link"}
+            </button>
+            <span id="email-link-address" class="link-preview ${showLinkAddress ? "visible" : ""}" aria-live="polite">Destino simulado: conta-segura.example/verificar</span>
+            ${isReply ? '<p class="email-reply" data-new-message><strong>Resposta simulada:</strong> Para evitar o bloqueio, use somente o botão enviado. Não podemos confirmar sua conta por outro canal.</p>' : ""}
           </div>
         </article>
       </div>
     </section>
   `;
 
-  render(`
-    <section class="challenge-view">
-      <div class="scenario-shell">
-        <div>${emailSimulation}</div>
-        ${scenarioSide(
-          "email",
-          "E-mail importante ou ameaça falsa?",
-          "A mensagem usa prazo curto e bloqueio para apressar sua decisão.",
-          isReply ? "O que fazer depois da resposta?" : "Qual seria sua atitude?",
-          isReply ? "A mensagem voltou a empurrar você para o link." : "Antes de clicar, confira o remetente e o endereço mostrado.",
-          decisions,
-          feedback
-        )}
-      </div>
-    </section>
-  `, "Analise o remetente, o prazo e o destino do botão antes de agir.");
+  render(
+    scenarioLayout(
+      "email",
+      "E-mail importante ou ameaça falsa?",
+      "O bloqueio e o prazo curto tentam apressar sua decisão.",
+      emailSimulation,
+      isReply ? "E agora, o que você faria?" : "O que você faria?",
+      decisions,
+      feedback
+    ),
+    "Analise o remetente, o prazo e o destino do botão antes de agir.",
+    {
+      focusSelector: isReply ? "[data-new-message]" : "[data-challenge-title]",
+      scrollSelector: isReply ? "[data-new-message]" : "[data-challenge-title]",
+      ...renderOptions,
+    }
+  );
 }
 
 function renderEmailFakePage() {
-  render(`
-    <section class="challenge-view">
-      <div class="scenario-shell">
-        <section class="fake-site" aria-label="Página falsa simulada">
-          <span class="fake-site-logo">conta segura</span>
-          <h3>Confirme sua conta</h3>
-          <p>A página imita uma área de segurança e tentaria recolher seus dados.</p>
-          <div class="fake-field-list" aria-label="Campos bloqueados e apenas ilustrativos">
-            <div class="fake-field">E-mail</div>
-            <div class="fake-field">Senha</div>
-            <div class="fake-field">Telefone</div>
-            <div class="fake-field">Código de segurança</div>
-          </div>
-          <div class="interruption-overlay">
-            <strong>Cuidado: você entrou em uma página falsa.</strong>
-            A página usou medo e urgência para tentar obter sua senha e seus dados.
-          </div>
-        </section>
-        ${scenarioSide(
-          "email",
-          "O link levou a uma página falsa",
-          "A simulação interrompe antes de qualquer preenchimento para mostrar o risco.",
-          "O que você aprendeu?",
-          "Links recebidos por mensagem podem levar a cópias de serviços conhecidos.",
-          [decisionButton("Concluir este desafio", "complete-scenario", "risk")],
-          '<div class="feedback-card danger"><strong>Atenção</strong>Urgência e pedido de senha ou código são sinais fortes para parar e conferir por outro canal.</div>'
-        )}
+  const fakePage = `
+    <section class="fake-site" aria-label="Página falsa simulada">
+      <span class="fake-site-logo">conta segura</span>
+      <h2>Confirme sua conta</h2>
+      <p>A página imita uma área de segurança e tentaria recolher seus dados.</p>
+      <div class="fake-field-list" aria-label="Campos bloqueados e apenas ilustrativos">
+        <div class="fake-field">E-mail</div>
+        <div class="fake-field">Senha</div>
+        <div class="fake-field">Telefone</div>
+        <div class="fake-field">Código de segurança</div>
+      </div>
+      <div class="interruption-overlay" data-risk-alert>
+        <strong>Cuidado: esta página é falsa.</strong>
+        Ela tentaria obter sua senha e seus dados.
       </div>
     </section>
-  `, "Página falsa simulada. Nenhuma informação pode ser digitada.");
+  `;
+
+  render(
+    scenarioLayout(
+      "email",
+      "O link levou a uma página falsa",
+      "A simulação parou antes de qualquer preenchimento.",
+      fakePage,
+      "O que você aprendeu?",
+      [decisionButton("Concluir este desafio", "complete-scenario", "risk")]
+    ),
+    "Página falsa simulada. Nenhuma informação pode ser digitada.",
+    { focusSelector: "[data-risk-alert]", scrollSelector: "[data-risk-alert]" }
+  );
 }
 
 function renderSms() {
@@ -430,7 +451,7 @@ function renderSms() {
       <div class="sms-speaker" aria-hidden="true"></div>
       <header class="sms-header">
         <strong>+55 11 99999-0000</strong>
-        <small>Número desconhecido · Simulação</small>
+        <small>Número desconhecido</small>
       </header>
       <div class="sms-messages">
         <span class="sms-time">Hoje, 11:06</span>
@@ -441,62 +462,62 @@ function renderSms() {
         </div>
         ${
           isReply
-            ? '<div class="sms-bubble">Para liberar hoje, faça o pagamento pelo link. Após 10 minutos, a encomenda será devolvida.</div>'
+            ? '<div class="sms-bubble" data-new-message>Para liberar hoje, faça o pagamento pelo link. Após 10 minutos, a encomenda será devolvida.</div>'
             : ""
         }
       </div>
     </section>
   `;
 
-  render(`
-    <section class="challenge-view">
-      <div class="scenario-shell">
-        <div>${smsSimulation}</div>
-        ${scenarioSide(
-          "sms",
-          "Entrega retida ou cobrança falsa?",
-          "A mensagem inesperada cobra um valor pequeno e pede ação imediata.",
-          isReply ? "O que fazer agora?" : "Qual seria sua atitude?",
-          isReply ? "O contato colocou mais pressão para impedir que você conferisse." : "Não use o link antes de conferir a entrega por um canal oficial.",
-          decisions,
-          feedback
-        )}
-      </div>
-    </section>
-  `, "Analise o número, o link e a cobrança antes de responder.");
+  render(
+    scenarioLayout(
+      "sms",
+      "Entrega retida ou cobrança falsa?",
+      "Uma cobrança pequena pede ação imediata por um link.",
+      smsSimulation,
+      isReply ? "E agora, o que você faria?" : "O que você faria?",
+      decisions,
+      feedback
+    ),
+    "Analise o número, o link e a cobrança antes de responder.",
+    {
+      focusSelector: isReply ? "[data-new-message]" : "[data-challenge-title]",
+      scrollSelector: isReply ? "[data-new-message]" : "[data-challenge-title]",
+    }
+  );
 }
 
 function renderSmsFakePage() {
-  render(`
-    <section class="challenge-view">
-      <div class="scenario-shell">
-        <section class="fake-site" aria-label="Página falsa de entrega simulada">
-          <span class="fake-site-logo">entrega rápida</span>
-          <h3>Taxa de liberação</h3>
-          <p>O valor pequeno era uma isca para levar você a uma página que pediria dados pessoais e bancários.</p>
-          <div class="fake-field-list" aria-label="Campos bloqueados e apenas ilustrativos">
-            <div class="fake-field">CPF</div>
-            <div class="fake-field">Endereço</div>
-            <div class="fake-field">Número do cartão</div>
-            <div class="fake-field">Validade e código de segurança</div>
-          </div>
-          <div class="interruption-overlay">
-            <strong>O valor pequeno era uma isca.</strong>
-            A página tentaria obter seus dados pessoais e bancários.
-          </div>
-        </section>
-        ${scenarioSide(
-          "sms",
-          "A cobrança levou a uma página falsa",
-          "A simulação foi interrompida antes de qualquer dado para mostrar o perigo do link.",
-          "O que você aprendeu?",
-          "Uma taxa pequena não torna a cobrança confiável. Confirme a entrega pelo aplicativo oficial.",
-          [decisionButton("Concluir este desafio", "complete-scenario", "risk")],
-          '<div class="feedback-card danger"><strong>Atenção</strong>Número desconhecido, link inesperado, prazo curto e pedido de cartão formam uma combinação de alerta.</div>'
-        )}
+  const fakePage = `
+    <section class="fake-site" aria-label="Página falsa de entrega simulada">
+      <span class="fake-site-logo">entrega rápida</span>
+      <h2>Taxa de liberação</h2>
+      <p>O valor pequeno era uma isca para levar você a uma página que pediria dados pessoais e bancários.</p>
+      <div class="fake-field-list" aria-label="Campos bloqueados e apenas ilustrativos">
+        <div class="fake-field">CPF</div>
+        <div class="fake-field">Endereço</div>
+        <div class="fake-field">Número do cartão</div>
+        <div class="fake-field">Validade e código de segurança</div>
+      </div>
+      <div class="interruption-overlay" data-risk-alert>
+        <strong>O valor pequeno era uma isca.</strong>
+        A página tentaria obter seus dados pessoais e bancários.
       </div>
     </section>
-  `, "Página falsa simulada. Nenhum dado pode ser informado.");
+  `;
+
+  render(
+    scenarioLayout(
+      "sms",
+      "A cobrança levou a uma página falsa",
+      "A simulação parou antes de qualquer dado.",
+      fakePage,
+      "O que você aprendeu?",
+      [decisionButton("Concluir este desafio", "complete-scenario", "risk")]
+    ),
+    "Página falsa simulada. Nenhum dado pode ser informado.",
+    { focusSelector: "[data-risk-alert]", scrollSelector: "[data-risk-alert]" }
+  );
 }
 
 function renderScenarioResult(kind, isSafe, title, text) {
@@ -532,7 +553,7 @@ function renderScenarioResult(kind, isSafe, title, text) {
         <button type="button" class="challenge-action ${isComplete ? "safe" : ""}" data-action="${isComplete ? "view-final" : "back-selection"}">${isComplete ? "Ver resultado final" : "Voltar aos desafios"}</button>
       </div>
     </section>
-  `, `${scenario.label}: ${title}`);
+  `, `${scenario.label}: ${title}`, { scrollSelector: "[data-challenge-title]" });
 }
 
 function renderFinal() {
@@ -581,6 +602,7 @@ function startScenario(scenario) {
   currentView = "scenario";
   scenarioStage = "start";
   emailAddressExpanded = false;
+  emailLinkExpanded = false;
 
   if (scenario === "whatsapp") {
     startWhatsapp();
@@ -698,7 +720,11 @@ function handleAction(event) {
   if (action === "complete-scenario") completeScenario(false, "A tentativa foi interrompida", "Você viu como a página falsa tentaria obter informações. Agora sabe onde parar.");
   if (action === "email-sender") {
     emailAddressExpanded = !emailAddressExpanded;
-    renderEmail();
+    renderEmail({ focusSelector: "[data-action=\"email-sender\"]", scrollSelector: "" });
+  }
+  if (action === "email-link-address") {
+    emailLinkExpanded = !emailLinkExpanded;
+    renderEmail({ focusSelector: "[data-action=\"email-link-address\"]", scrollSelector: "" });
   }
 }
 
