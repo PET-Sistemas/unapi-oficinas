@@ -108,6 +108,15 @@
   line-height: 1;
 }
 
+.tool-row p {
+  max-width: 29ch;
+  margin-top: 9px;
+  color: #654f68;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
 .row-action {
   min-height: 52px;
   display: flex;
@@ -255,6 +264,12 @@
 
   .tool-row h2 {
     font-size: 27px;
+  }
+
+  .tool-row p {
+    margin-top: 7px;
+    font-size: 14px;
+    line-height: 1.28;
   }
 
   .row-action {

@@ -185,6 +185,11 @@
   .video-card {
     min-height: 0;
   }
+
+  .video-action {
+    gap: 8px;
+    font-size: 14px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
