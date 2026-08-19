@@ -42,14 +42,23 @@
       choiceButtons.forEach((button) => {
         const mode = button.dataset.deviceChoice;
         const isRecommended = mode === recommendation;
+        const isSelected = mode === activeMode;
         button.classList.toggle("is-recommended", isRecommended);
-        button.setAttribute("aria-pressed", String(mode === activeMode));
-        const badge = button.querySelector("[data-device-recommendation]");
-        if (badge) badge.hidden = !isRecommended;
+        button.classList.toggle("is-selected", isSelected);
+        button.setAttribute("aria-pressed", String(isSelected));
+
+        const recommendationBadge = button.querySelector("[data-device-recommendation]");
+        const selectedBadge = button.querySelector("[data-device-selected]");
+        if (recommendationBadge) recommendationBadge.hidden = !isRecommended || isSelected;
+        if (selectedBadge) {
+          selectedBadge.hidden = !isSelected;
+          selectedBadge.textContent = isRecommended ? "✓ Selecionado · recomendado" : "✓ Selecionado";
+        }
       });
 
       if (currentLabel) {
-        currentLabel.textContent = activeMode === "desktop" ? "computador" : "celular";
+        const visibleMode = activeMode || recommendation;
+        currentLabel.textContent = visibleMode === "desktop" ? "computador" : "celular";
       }
     }
 
@@ -109,8 +118,9 @@
     });
 
     const storedMode = readStoredMode();
-    activeMode = storedMode || recommendedMode();
-    options.applyMode(activeMode, { manual: Boolean(storedMode), moveFocus: false });
+    const initialMode = storedMode || recommendedMode();
+    activeMode = storedMode;
+    options.applyMode(initialMode, { manual: Boolean(storedMode), moveFocus: false });
     updateGateState();
 
     if (storedMode) {

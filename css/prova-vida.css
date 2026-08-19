@@ -87,7 +87,7 @@
 
 .proof-nav {
   display: flex;
-  gap: 26px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
