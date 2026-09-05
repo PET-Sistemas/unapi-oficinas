@@ -23,6 +23,12 @@ Site estatico para apoiar as oficinas de informatica da UnAPI UFMS. O portal reu
 │   └── index.html
 ├── seguranca-digital/
 │   └── index.html
+├── pix/
+│   ├── index.html
+│   ├── qr/
+│   │   └── index.html
+│   └── tests/
+│       └── account.test.cjs
 ├── mobilidade/
 │   ├── index.html
 │   ├── uber/
@@ -40,6 +46,7 @@ Site estatico para apoiar as oficinas de informatica da UnAPI UFMS. O portal reu
 │   ├── prova-vida.css
 │   ├── assinatura-eletronica.css
 │   ├── seguranca-digital.css
+│   ├── pix.css
 │   ├── mobilidade.css
 │   ├── mobilidade-uber.css
 │   └── mobilidade-maps.css
@@ -50,12 +57,22 @@ Site estatico para apoiar as oficinas de informatica da UnAPI UFMS. O portal reu
 │   ├── prova-vida.js
 │   ├── assinatura-eletronica.js
 │   ├── seguranca-digital.js
+│   ├── pix.js
+│   ├── pix-account.js
+│   ├── pix-qr.js
 │   ├── mobilidade-location.js
 │   ├── mobilidade-map.js
 │   ├── mobilidade-uber.js
-│   └── mobilidade-maps.js
+│   ├── mobilidade-maps.js
+│   └── vendor/
+│       ├── qrcode-generator.js
+│       └── qrcode-generator.LICENSE.txt
 └── img/
-    └── imagens compartilhadas em WebP e SVG
+    ├── ferramentas/
+    │   └── pix.svg
+    ├── pix/
+    │   └── banco-unapi-logo.svg
+    └── demais imagens compartilhadas em WebP e SVG
 ```
 
 ## Como executar
@@ -88,6 +105,14 @@ http://localhost:8000
 - `js/assinatura-eletronica.js` controla as dez etapas, o arquivo ficticio e a posicao visual da assinatura.
 - `seguranca-digital/` contem o Desafio Antigolpe, um simulador de decisoes para WhatsApp, e-mail e SMS.
 - `js/seguranca-digital.js` controla todos os dialogos pre-programados, as ramificacoes e o progresso temporario dos cenarios.
+- `pix/` contem o Banco UnAPI, uma experiencia bancaria com Pix, pagamentos, extrato, cartoes e reserva em memoria.
+- `pix/qr/` abre cobrancas simuladas a partir dos cenarios fechados da dinamica presencial.
+- `css/pix.css` guarda a identidade propria e responsiva do aplicativo ficticio, sem alterar o visual das outras atividades.
+- `js/pix.js` renderiza as telas, controla a navegacao e compartilha os fluxos de pagamento entre `pix/` e `pix/qr/`.
+- `js/pix-account.js` concentra o catalogo fechado de contatos e contas, o saldo em centavos, o extrato e as regras de cartoes e reserva. Nao depende do DOM nem possui persistencia.
+- `js/pix-qr.js` define os cenarios da oficina, monta suas URLs e QR Codes locais e controla o painel externo, a tela cheia e o gesto de voltar.
+- `pix/tests/account.test.cjs` verifica as regras da conta com o executor nativo de testes do Node.js, sem instalar dependencias.
+- `js/vendor/qrcode-generator.js` e a copia local, sob licenca MIT, usada somente para desenhar os QR Codes no navegador, sem consultar servicos externos.
 - `mobilidade/` reúne duas experiências interativas: solicitação de corrida e planejamento personalizado de rotas.
 - `js/mobilidade-uber.js` e `js/mobilidade-maps.js` controlam os fluxos temporários das experiências de mobilidade.
 - `js/mobilidade-location.js` faz busca explícita de locais e solicita rotas temporárias sem guardar as escolhas.
@@ -118,6 +143,71 @@ O documento `documento-treinamento.pdf`, o codigo `000000` e o selo final existe
 A pagina `seguranca-digital/` ensina a regra `PARE -> CONFIRA -> DECIDA` por meio de conversas e mensagens ficticias. Os tres cenarios usam somente respostas pre-programadas e ficam inteiramente no navegador durante a sessao atual.
 
 O desafio nao coleta dados, nao abre links externos, nao usa inteligencia artificial, nao chama APIs, nao usa cookies nem `localStorage` e nao aceita senhas, codigos, cartoes ou documentos.
+
+## Banco UnAPI — Pix na Prática
+
+O Banco UnAPI e um banco digital ficticio criado exclusivamente para as oficinas da UnAPI UFMS. A atividade `pix/` apresenta uma conta bancaria interativa, com linguagem curta e navegacao propria de aplicativo. O participante entra na conta de Maria Oliveira, com saldo inicial de R$ 1.250,00, e pode praticar:
+
+- Pix por CPF/CNPJ, celular, e-mail e chave aleatoria, usando contatos de um catalogo fechado;
+- conferencia de destinatario, documento, chave e valor, cancelamento, confirmacao e comprovante;
+- cobrancas por QR Code e Pix Copia e Cola com codigos exclusivos da oficina;
+- recebimento com valor escolhido, QR Code e copia da chave ou do codigo;
+- pagamento de tres contas ficticias, selecionadas na lista ou pelo codigo fornecido;
+- extrato com filtros de entradas/saidas e comprovantes de cada movimentacao;
+- fatura, pagamento da fatura, ajuste de limite, bloqueio/desbloqueio de cartao fisico e virtual, compras on-line e aproximacao;
+- guardar dinheiro e resgatar da reserva, ocultar saldo, consultar perfil e ajuda.
+
+Pagamentos efetivados na sessao atualizam o saldo e o extrato. Cancelar nao debita, saldo insuficiente bloqueia a operacao e contas/fatura pagas nao podem ser debitadas novamente. Guardar e resgatar apenas transferem valores entre conta e reserva. Nao ha produtos de credito, investimentos reais ou operacoes financeiras externas.
+
+A identidade do aplicativo usa o roxo, creme e amarelo do portal, as fontes locais Atkinson Hyperlegible e Fraunces e as marcas institucionais existentes. Os estilos e scripts do Banco UnAPI ficam isolados da Mobilidade e das demais atividades. A unica biblioteca adicionada e o gerador de QR Code local, com versao e licenca registradas em `js/vendor/qrcode-generator.LICENSE.txt`; nao ha instalacao nem etapa de build.
+
+As chaves, pessoas, documentos, saldos, valores e identificadores exibidos sao ficticios. A simulacao nao solicita senha, cartao, codigo bancario, CPF real ou chave Pix real; nao movimenta dinheiro, nao abre aplicativos bancarios, nao acessa Open Finance, nao usa APIs financeiras e nao envia dados para servidores.
+
+Todo o estado fica somente na memoria da pagina. Nao ha cookies, `localStorage`, `sessionStorage`, IndexedDB ou persistencia: ao atualizar ou fechar a pagina, o progresso e os dados da sessao sao perdidos. `Recomecar` tambem restaura a conta inicial. Os avisos de treinamento e a orientacao para usar apenas dados ficticios ficam fora do aplicativo, no painel lateral fixo da oficina. No celular, esse painel se recolhe na faixa `Oficina UnAPI · Treinamento`, acima do banco, liberando a area de interacao. A recapitulacao de seguranca fica em `Cuidados antes de pagar`.
+
+Copiar chave/codigo so acessa a area de transferencia apos um clique explicito. Se o navegador negar essa permissao, o botao `Colar codigo` reaproveita a copia mantida em memoria. Uma copia autorizada na area de transferencia do sistema pode permanecer depois de fechar a pagina; ela contem somente a chave ficticia ou o codigo da oficina, nunca dados pessoais ou um payload Pix real. Nao existe compartilhamento de comprovantes.
+
+### Modo oficina e QR Codes
+
+Para projetar os cenarios, abra o Banco UnAPI e use o controle `QR Codes da dinâmica`. Os codigos sao gerados localmente pelo navegador, mas sempre apontam para a publicacao institucional do PET Sistemas: `https://pet-sistemas.github.io/unapi-oficinas/pix/qr/?cenario=...`. Eles nao usam payload Pix EMV, nao representam cobranca real e nao tentam abrir um aplicativo bancario.
+
+No celular, abra a faixa `Oficina UnAPI · Treinamento` para acessar os controles. O acesso direto ao modo do facilitador e `pix/?modo=oficina`. Escolha um cenario, pressione `Projetar QR Code` e use `Abrir em tela cheia` se desejar. A projecao mostra a tarefa esperada sem revelar qual divergencia o participante deve identificar. Os alunos usam a camera normal do celular; o site nao solicita acesso a camera. Dentro da area Pix, `Ler QR Code` orienta a leitura do codigo projetado; a lista de previa local fica disponivel somente quando o banco e aberto com `?modo=oficina`.
+
+O QR nao usa `localhost` nem o IP do computador do facilitador. Isso permite projetar um codigo em um computador e abrir a cobranca em celulares de outras redes, desde que a oficina esteja publicada no PET Sistemas. A URL canonica e definida em `js/pix-qr.js` e usada tanto nos cenarios quanto no QR de recebimento.
+
+Para revisar a interface antes da publicacao, ainda e possivel servir uma copia local por HTTP:
+
+```sh
+python3 -m http.server 8000
+```
+
+Depois, abra `http://localhost:8000/pix/` apenas para testar a interface no computador. Os QR Codes continuarao apontando para `https://pet-sistemas.github.io/unapi-oficinas/`; portanto, para o ensaio com os alunos, publique/atualize primeiro o `main` do repositorio `PET-Sistemas/unapi-oficinas`.
+
+Os tres cenarios da dinamica treinam uma cobranca correta, um destinatario diferente do esperado e um valor diferente do combinado. O aluno escaneia o QR com a camera normal e abre `pix/qr/index.html?cenario=...`, uma rota separada do portal. Essa pagina mostra a cobranca recebida; `Continuar no Banco UnAPI` leva para a conferencia do pagamento, seguindo depois pelo mesmo fluxo de cancelar, continuar e confirmar usado no Pix por chave. A rota nao mostra os controles do facilitador.
+
+- `cantina`: Cantina UnAPI, R$ 12,00; conferir e confirmar.
+- `destinatario-errado`: espera-se Cantina UnAPI, mas aparece Carlos Eduardo Pereira; cancelar.
+- `valor-errado`: espera-se R$ 15,00, mas aparece R$ 150,00; cancelar.
+
+Nos dois cenarios divergentes, `Continuar` bloqueia a confirmacao. A explicacao e o retorno educativo ficam no painel externo da oficina, junto do contexto esperado. Identificadores de cenario desconhecidos abrem `Cobranca nao encontrada`, sem criar destinatarios.
+
+### Receber e Pix Copia e Cola
+
+Em `Receber`, informe um valor e gere o QR Code. Ele aponta para `https://pet-sistemas.github.io/unapi-oficinas/pix/qr/?receber=<centavos>`, sempre para a destinataria ficticia Maria Oliveira. O parametro aceita apenas inteiros positivos de ate R$ 10.000,00; nao permite definir nome, documento ou chave. O codigo de copia e cola correspondente e `UNAPI:RECEBER:<centavos>`. A cobranca da cantina usa `UNAPI:CANTINA:1200`. Nenhum desses codigos e um payload EMV ou funciona em um banco real; codigos externos sao rejeitados.
+
+Cada pagina/aparelho possui sua propria conta temporaria, sem sincronizacao. Pagar um QR em outro aparelho **nao credita automaticamente** a conta que o gerou. Para demonstrar a entrada de dinheiro, depois de gerar um QR use `Registrar recebimento na conta` no painel externo. O controle registra uma unica entrada por cobranca gerada; gerar uma nova cobranca permite uma nova demonstracao.
+
+### Validacao local
+
+```sh
+node --test pix/tests/account.test.cjs
+node --check js/pix-account.js
+node --check js/pix.js
+node --check js/pix-qr.js
+git diff --check
+```
+
+Os testes do modelo verificam formatos monetarios, catalogo fechado, saldo insuficiente, pagamentos unicos, conservacao de valores da reserva, reconciliacao do extrato, cartoes e reinicio. Para revisar a interface, abra `pix/` e percorra as acoes em 320, 360, 375, 390, 412, 768 px e desktop. Confira tambem `pix/qr/?cenario=cantina`, `pix/qr/?cenario=destinatario-errado`, `pix/qr/?cenario=valor-errado` e `pix/?modo=oficina`. A leitura pela camera de aparelhos fisicos deve ser ensaiada na rede/projetor que sera usado na oficina.
 
 ## Mobilidade com o celular
 
