@@ -266,6 +266,22 @@ textarea.bank-field { resize:vertical; min-height:132px; max-height:220px; }
 .bank-projected-qr { min-width:0; padding:20px; border:1px solid var(--bank-line); border-radius:20px; background:white; }
 .bank-projected-qr > svg { width:100%; height:auto; stroke:none; fill:black; shape-rendering:crispEdges; }
 .bank-projected-qr p { margin-top:12px; color:var(--bank-muted); font-size:14px; overflow-wrap:anywhere; text-align:center; }
+@media (min-width:1360px) {
+  body:not([data-pix-screen=workshop]) .pix-experience-shell { width:min(100%,1600px); }
+  body:not([data-pix-screen=workshop]) .pix-workshop-tools { width:min(520px,100%); }
+  body:not([data-pix-screen=workshop]) .pix-toolbar { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); column-gap:28px; align-items:start; }
+  body:not([data-pix-screen=workshop]) .pix-toolbar > .pix-institutional-signature,
+  body:not([data-pix-screen=workshop]) .pix-toolbar > .pix-kicker,
+  body:not([data-pix-screen=workshop]) .pix-toolbar > h2,
+  body:not([data-pix-screen=workshop]) .pix-toolbar > .pix-side-concept { grid-column:1; }
+  body:not([data-pix-screen=workshop]) .pix-toolbar > .pix-context-warning,
+  body:not([data-pix-screen=workshop]) .pix-toolbar > #pix-context-task,
+  body:not([data-pix-screen=workshop]) .pix-toolbar > #pix-context-feedback,
+  body:not([data-pix-screen=workshop]) .pix-toolbar > .pix-side-actions,
+  body:not([data-pix-screen=workshop]) .pix-toolbar > .pix-side-guide { grid-column:2; }
+  body:not([data-pix-screen=workshop]) .pix-toolbar > .pix-context-warning { margin-top:0; padding-top:0; padding-left:24px; border-top:0; border-left:1px solid var(--bank-line); }
+  body:not([data-pix-screen=workshop]) .pix-toolbar > .pix-side-guide { border-top:1px solid var(--bank-line); padding-top:16px; }
+}
 body[data-pix-screen=workshop] .pix-experience-shell { grid-template-columns:260px minmax(0,1fr); gap:32px; }
 body[data-pix-screen=workshop] .pix-device { width:100%; border-radius:26px; }
 body[data-pix-screen=workshop] .pix-device-screen { border-radius:18px; }
