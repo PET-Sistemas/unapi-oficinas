@@ -141,7 +141,7 @@
   }
   function renderReceiveCode() {
     const url=buildReceiveUrl(state.receiveCents);
-    return shell("Receber Pix",`${heading("Seu QR Code está pronto")}<div class="bank-receive-qr">${qrSvg(url.href)}<strong>${money(state.receiveCents)}</strong><span>${contacts.own.name}</span></div><dl class="bank-details">${detail("Chave Pix",contacts.own.key)}</dl><p class="bank-field-label">Pix Copia e Cola</p><p class="bank-code-text">UNAPI:RECEBER:${state.receiveCents}</p>`,`${button("Copiar código","copy-receive")}${button("Alterar valor","back","secondary")}`);
+    return shell("Receber Pix",`${heading("Seu QR Code está pronto")}<div class="bank-receive-qr">${qrSvg(url)}<strong>${money(state.receiveCents)}</strong><span>${contacts.own.name}</span></div><dl class="bank-details">${detail("Chave Pix",contacts.own.key)}</dl><p class="bank-field-label">Pix Copia e Cola</p><p class="bank-code-text">UNAPI:RECEBER:${state.receiveCents}</p>`,`${button("Copiar código","copy-receive")}${button("Alterar valor","back","secondary")}`);
   }
   function renderKeys() {
     return shell("Minhas chaves",`${heading("Suas chaves Pix")}<p class="bank-muted">Receba diretamente na sua conta.</p><div class="bank-key-card"><span>E-mail</span><strong>${contacts.own.key}</strong>${button("Copiar chave","copy-key","secondary")}</div><div class="bank-key-card"><span>Chave aleatória</span><strong>UNAPI-CONTA-MARIA-2026</strong>${button("Copiar chave","copy-random-key","secondary")}</div>`);

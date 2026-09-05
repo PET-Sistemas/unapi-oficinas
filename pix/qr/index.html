@@ -21,21 +21,25 @@
           <span>Oficina UnAPI <span aria-hidden="true">·</span> Treinamento</span><span aria-hidden="true">⌄</span>
         </button>
         <div id="pix-experience-tools" class="pix-toolbar">
-          <div class="pix-institutional-signature"><img src="../../img/unapi-marca.webp" alt="UnAPI" /><img src="../../img/ufms.webp" alt="UFMS" /></div>
-          <span class="pix-kicker">Oficinas de informática</span>
-          <h2>Pix na Prática</h2>
-          <p class="pix-side-concept">Treine antes de fazer de verdade.</p>
-          <div class="pix-context-warning"><strong>Ambiente de treinamento</strong><p>Nenhum dinheiro será movimentado. Use apenas os dados fictícios da oficina. As informações desaparecem ao atualizar a página.</p></div>
-          <div id="pix-context-task" hidden></div>
-          <p id="pix-context-feedback" role="status" hidden></p>
-          <nav class="pix-side-actions" aria-label="Controles da oficina">
-            <a class="pix-tool-control" href="../../ferramentas/">← Voltar para Ferramentas</a>
-            <button id="pix-reset" class="pix-tool-control" type="button">↻ Recomeçar</button>
-            <button id="pix-fullscreen" class="pix-tool-control" type="button" aria-pressed="false"><span data-fullscreen-label>Abrir em tela cheia</span></button>
-            <button id="pix-workshop-mode" class="pix-tool-control" type="button">QR Codes da dinâmica</button>
-            <button id="pix-credit-receipt" class="pix-tool-control" type="button" hidden>Registrar recebimento na conta</button>
-          </nav>
-          <details class="pix-side-guide"><summary>Cuidados antes de pagar</summary><p>Pare → Confira → Decida.</p><ol><li>Confira o destinatário.</li><li>Confira CPF/CNPJ quando disponível.</li><li>Confira o valor.</li><li>Só então confirme.</li></ol><a href="../../seguranca-digital/">Revisar segurança digital</a></details>
+          <section class="pix-panel pix-panel-intro" aria-labelledby="pix-panel-intro-title">
+            <div class="pix-institutional-signature"><img src="../../img/unapi-marca.webp" alt="UnAPI" /><img src="../../img/ufms.webp" alt="UFMS" /></div>
+            <span class="pix-kicker">Oficinas de informática</span>
+            <h2 id="pix-panel-intro-title">Pix na Prática</h2>
+            <p class="pix-side-concept">Treine antes de fazer de verdade.</p>
+          </section>
+          <section class="pix-panel pix-panel-controls" aria-label="Orientações e controles da oficina">
+            <div class="pix-context-warning"><strong>Ambiente de treinamento</strong><p>Nenhum dinheiro será movimentado. Use apenas os dados fictícios da oficina. As informações desaparecem ao atualizar a página.</p></div>
+            <div id="pix-context-task" hidden></div>
+            <p id="pix-context-feedback" role="status" hidden></p>
+            <nav class="pix-side-actions" aria-label="Controles da oficina">
+              <a class="pix-tool-control" href="../../ferramentas/">← Voltar para Ferramentas</a>
+              <button id="pix-reset" class="pix-tool-control" type="button">↻ Recomeçar</button>
+              <button id="pix-fullscreen" class="pix-tool-control" type="button" aria-pressed="false"><span data-fullscreen-label>Abrir em tela cheia</span></button>
+              <button id="pix-workshop-mode" class="pix-tool-control" type="button">QR Codes da dinâmica</button>
+              <button id="pix-credit-receipt" class="pix-tool-control" type="button" hidden>Registrar recebimento na conta</button>
+            </nav>
+            <details class="pix-side-guide"><summary>Cuidados antes de pagar</summary><p>Pare → Confira → Decida.</p><ol><li>Confira o destinatário.</li><li>Confira CPF/CNPJ quando disponível.</li><li>Confira o valor.</li><li>Só então confirme.</li></ol><a href="../../seguranca-digital/">Revisar segurança digital</a></details>
+          </section>
         </div>
       </aside>
       <section id="pix-device" class="pix-device" aria-label="Banco UnAPI">
