@@ -73,7 +73,7 @@
   transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
 }
 
-.tool-row:nth-child(5) {
+.tool-row:nth-child(5):nth-last-child(3) {
   grid-column: 2 / span 2;
 }
 
@@ -295,7 +295,7 @@
   }
 
   .tool-row,
-  .tool-row:nth-child(5) {
+  .tool-row:nth-child(5):nth-last-child(3) {
     grid-column: auto;
   }
 }
