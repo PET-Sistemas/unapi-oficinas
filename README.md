@@ -144,7 +144,7 @@ A pagina `seguranca-digital/` ensina a regra `PARE -> CONFIRA -> DECIDA` por mei
 
 O desafio nao coleta dados, nao abre links externos, nao usa inteligencia artificial, nao chama APIs, nao usa cookies nem `localStorage` e nao aceita senhas, codigos, cartoes ou documentos.
 
-## Banco UnAPI — Pix na Prática
+## Banco UnAPI — Dia a dia
 
 O Banco UnAPI e um banco digital ficticio criado exclusivamente para as oficinas da UnAPI UFMS. A atividade `pix/` apresenta uma conta bancaria interativa, com linguagem curta e navegacao propria de aplicativo. O participante entra na conta de Maria Oliveira, com saldo inicial de R$ 1.250,00, e pode praticar:
 
@@ -152,12 +152,19 @@ O Banco UnAPI e um banco digital ficticio criado exclusivamente para as oficinas
 - conferencia de destinatario, documento, chave e valor, cancelamento, confirmacao e comprovante;
 - cobrancas por QR Code e Pix Copia e Cola com codigos exclusivos da oficina;
 - recebimento com valor escolhido, QR Code e copia da chave ou do codigo;
-- pagamento de tres contas ficticias, selecionadas na lista ou pelo codigo fornecido;
-- extrato com filtros de entradas/saidas e comprovantes de cada movimentacao;
+- pagamento de tres contas ficticias pela lista, codigo fornecido ou leitura simulada, com beneficiario, valor, vencimento e situacao;
+- agendamento, consulta e cancelamento de pagamentos, sem debito antecipado;
+- extrato e central de comprovantes com busca por nome/pagamento, entradas/saidas e periodo;
+- notificacoes internas de contas, agendamentos, recebimentos e compras, com leitura e destino vinculados ao estado;
+- consulta de compras com estabelecimento, data, valor e cartao utilizado, reconhecimento e acesso ao bloqueio temporario;
 - fatura, pagamento da fatura, ajuste de limite, bloqueio/desbloqueio de cartao fisico e virtual, compras on-line e aproximacao;
 - guardar dinheiro e resgatar da reserva, ocultar saldo, consultar perfil e ajuda.
 
-Pagamentos efetivados na sessao atualizam o saldo e o extrato. Cancelar nao debita, saldo insuficiente bloqueia a operacao e contas/fatura pagas nao podem ser debitadas novamente. Guardar e resgatar apenas transferem valores entre conta e reserva. Nao ha produtos de credito, investimentos reais ou operacoes financeiras externas.
+Pagamentos efetivados na sessao atualizam o saldo, a situacao da conta e o extrato. O comprovante e derivado da transacao, inclusive quando aberto pela conta paga ou pelo agendamento concluido. Cancelar nao debita, saldo insuficiente bloqueia a operacao e contas/fatura pagas nao podem ser debitadas novamente. Guardar e resgatar apenas transferem valores entre conta e reserva. Nao ha produtos de credito, investimentos reais ou operacoes financeiras externas.
+
+A home preserva os quatro atalhos Pix, Pagar, Receber e Guardar. Comprovantes tem acesso proprio logo abaixo, seguido da fatura e das ultimas movimentacoes. Uma lembranca contextual aparece quando ha pagamento agendado. O sino abre as notificacoes de contas e compras; ler uma notificacao nao paga uma conta nem reconhece uma compra. A rolagem interna funciona por toque, roda do mouse e teclado, sem uma barra lateral aparente.
+
+`js/pix-account.js` concentra as regras e os dados. `js/pix-daily.js` renderiza as novas telas de rotina usando os mesmos helpers de `js/pix.js`, que continua responsavel pela navegacao e pelas acoes. Os dois pontos de entrada (`pix/` e `pix/qr/`) carregam os mesmos modulos. Nao houve migracao de framework nem inclusao de dependencias.
 
 A identidade do aplicativo usa o roxo, creme e amarelo do portal, as fontes locais Atkinson Hyperlegible e Fraunces e as marcas institucionais existentes. Os estilos e scripts do Banco UnAPI ficam isolados da Mobilidade e das demais atividades. A unica biblioteca adicionada e o gerador de QR Code local, com versao e licenca registradas em `js/vendor/qrcode-generator.LICENSE.txt`; nao ha instalacao nem etapa de build.
 
@@ -165,7 +172,34 @@ As chaves, pessoas, documentos, saldos, valores e identificadores exibidos sao f
 
 Todo o estado fica somente na memoria da pagina. Nao ha cookies, `localStorage`, `sessionStorage`, IndexedDB ou persistencia: ao atualizar ou fechar a pagina, o progresso e os dados da sessao sao perdidos. `Recomecar` tambem restaura a conta inicial. Os avisos de treinamento e a orientacao para usar apenas dados ficticios ficam fora do aplicativo, no painel lateral fixo da oficina. No celular, esse painel se recolhe na faixa `Oficina UnAPI · Treinamento`, acima do banco, liberando a area de interacao. A recapitulacao de seguranca fica em `Cuidados antes de pagar`.
 
-Copiar chave/codigo so acessa a area de transferencia apos um clique explicito. Se o navegador negar essa permissao, o botao `Colar codigo` reaproveita a copia mantida em memoria. Uma copia autorizada na area de transferencia do sistema pode permanecer depois de fechar a pagina; ela contem somente a chave ficticia ou o codigo da oficina, nunca dados pessoais ou um payload Pix real. Nao existe compartilhamento de comprovantes.
+Copiar chave/codigo ou comprovante so acessa a area de transferencia apos um clique explicito. Se o navegador negar essa permissao, o botao `Colar codigo` reaproveita a copia mantida em memoria. Para comprovantes, a falha e informada e os dados continuam disponiveis na tela. Uma copia autorizada na area de transferencia do sistema pode permanecer depois de fechar a pagina; ela contem somente dados ficticios. O texto do comprovante traz `COMPROVANTE DE TREINAMENTO` e `SEM VALOR FINANCEIRO`. Nao ha envio automatico, integracao com mensageiros ou geracao de PDF.
+
+### Contas e agendamentos
+
+Os vencimentos sao calculados a partir do dia em que a conta e iniciada: energia no dia seguinte, agua em cinco dias e internet em oito. O pagamento de agua de R$ 90,00 no historico e identificado como uma conta anterior, diferente da atual de R$ 86,40. Todos os codigos continuam exclusivos da oficina; o desenho de barras e ilustrativo, nao e um codigo bancario. A leitura simulada nao solicita camera e permite escolher uma das tres contas ficticias.
+
+Jornada: `Pagar -> Ler codigo / Digitar codigo / Minhas contas -> Conferir conta -> Pagar ou agendar -> Data -> Confirmar -> Resultado`. A conta paga continua acessivel e abre seu comprovante. Para pagar imediatamente uma conta ja agendada, primeiro cancele o agendamento.
+
+O agendamento aceita datas futuras ate o vencimento. Ele possui as situacoes pendente, cancelado, concluido ou nao realizado. Somente a execucao concluida gera debito e transacao financeira. O historico de tentativas e mantido mesmo depois de cancelar, reagendar ou pagar por outro caminho.
+
+A data e o relogio da simulacao ficam fixos durante a atividade. Para demonstrar a execucao, use `Simular dia DD/MM/AAAA` no painel externo `Oficina UnAPI · Treinamento`. Esse controle aparece quando existe agendamento pendente e avanca ate a proxima data agendada. Todos os pagamentos daquele dia sao processados em ordem de criacao, usando o saldo restante. Nao ha espera real, processamento em segundo plano, reserva antecipada de saldo ou novas tentativas automaticas.
+
+Se faltar saldo, o agendamento fica como nao realizado e a conta permanece em aberto. A notificacao leva ao resultado, de onde e possivel voltar a conta e pagar novamente. Novas movimentacoes usam a data simulada. `Recomecar` restaura o dia atual e todos os dados iniciais.
+
+### Compras e atividades
+
+As tres compras da fatura sao dados da conta, somam R$ 184,90 e permanecem consultaveis depois do pagamento. Reconhecer uma compra nao altera a fatura. Bloquear o cartao e reversivel e nao remove compras anteriores, nao abre contestacao e nao resolve uma compra desconhecida. Cartao virtual, compras on-line e aproximacao preservam os controles existentes; nao existe autorizacao de novas compras nem uma disputa bancaria completa.
+
+Situacoes curtas que podem ser exploradas:
+
+- A energia vence amanha: localizar a conta, conferir e decidir quando pagar.
+- A agua deve ser paga daqui a alguns dias: agendar, consultar e depois cancelar ou simular a data.
+- Foi pago um valor ontem: buscar `agua` em Comprovantes e identificar a conta anterior.
+- Uma compra de R$ 65,00 apareceu: abrir a notificacao, conferir a farmacia e o cartao utilizado.
+- O cartao nao foi encontrado: bloquear temporariamente e desbloquear quando localizado.
+- O saldo foi usado antes da data agendada: consultar a falha e verificar que nao houve pagamento.
+
+Recarga, DDA, debito automatico, Pix Automatico, camera real e persistencia ficam fora desta versao.
 
 ### Modo oficina e QR Codes
 
@@ -202,12 +236,25 @@ Cada pagina/aparelho possui sua propria conta temporaria, sem sincronizacao. Pag
 ```sh
 node --test pix/tests/account.test.cjs
 node --check js/pix-account.js
+node --check js/pix-daily.js
 node --check js/pix.js
 node --check js/pix-qr.js
 git diff --check
 ```
 
-Os testes do modelo verificam formatos monetarios, catalogo fechado, saldo insuficiente, pagamentos unicos, conservacao de valores da reserva, reconciliacao do extrato, cartoes e reinicio. Para revisar a interface, abra `pix/` e percorra as acoes em 320, 360, 375, 390, 412, 768 px e desktop. Confira tambem `pix/qr/?cenario=cantina`, `pix/qr/?cenario=destinatario-errado`, `pix/qr/?cenario=valor-errado` e `pix/?modo=oficina`. A leitura pela camera de aparelhos fisicos deve ser ensaiada na rede/projetor que sera usado na oficina.
+Os testes do modelo verificam formatos monetarios, catalogo fechado, saldo insuficiente, pagamentos unicos, conservacao de valores da reserva, reconciliacao do extrato, cartoes e reinicio. Tambem verificam datas, agendamento sem debito, cancelamento, duplicidade, execucao em ordem, falhas, vinculos com transacoes/notificacoes e isolamento dos snapshots.
+
+O teste opcional `pix/tests/browser.test.cjs` usa o protocolo do Chromium por WebSocket nativo do Node 22+, sem instalar uma biblioteca de automacao no portal. Com o servidor local ativo e `agent-browser` ja instalado, abra uma sessao isolada:
+
+```sh
+agent-browser --session unapi-test open http://127.0.0.1:8000/pix/
+agent-browser --session unapi-test set viewport 1440 1000
+agent-browser --session unapi-test get cdp-url
+```
+
+Passe o endereco retornado em `UNAPI_CDP_URL` ao executar `node --test pix/tests/browser.test.cjs`. Se o Chromium exigir neste ambiente, use `--args '--no-sandbox'` ao abrir a sessao. `UNAPI_TEST_URL` altera o endereco base e `UNAPI_SCREENSHOTS` pode apontar para um diretorio existente para receber capturas PNG. Sem `UNAPI_CDP_URL`, os testes de navegador ficam explicitamente ignorados. Feche somente a sessao de teste com `agent-browser --session unapi-test close` ao terminar.
+
+Os testes de navegador percorrem as jornadas novas em 360, 390, 430 px e desktop, verificam rolagem, alvos, overflow e console, e incluem regressao dos fluxos Pix, QR, reserva, cartoes e teclado. A leitura pela camera de aparelhos fisicos deve ser ensaiada na rede/projetor que sera usado na oficina; teclado virtual nativo, VoiceOver e TalkBack tambem exigem ensaio no aparelho.
 
 ## Mobilidade com o celular
 

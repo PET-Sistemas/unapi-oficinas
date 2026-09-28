@@ -1,7 +1,7 @@
 (() => {
   "use strict";
   const app = document.getElementById("pix-app");
-  if (!app || !window.BancoUnapi || !window.PixQrWorkshop) return;
+  if (!app || !window.BancoUnapi || !window.PixQrWorkshop || !window.createBancoUnapiDaily) return;
   const root = new URL("../", document.currentScript.src);
   const href = path => new URL(path, root).href;
   const { contacts, bills, parseMoney, createAccount } = window.BancoUnapi;
@@ -33,6 +33,8 @@
       help: '<circle cx="12" cy="12" r="9"/><path d="M9 9a3 3 0 0 1 6 0c0 2-3 2-3 5m0 3h.01"/>',
       reserve: '<path d="M4 9h16v12H4zm-1 0 9-6 9 6M8 12v6m4-6v6m4-6v6"/>',
       close: '<path d="m6 6 12 12M18 6 6 18"/>',
+      bell: '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>',
+      calendar: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>',
     };
     return `<svg viewBox="0 0 24 24" aria-hidden="true">${paths[name] || paths.chevron}</svg>`;
   }
@@ -63,19 +65,32 @@
   const displayMoney = cents => account.snapshot().hiddenBalance ? '<span aria-label="Valor oculto">••••</span>' : money(cents);
   const avatar = person => `<span class="bank-avatar" aria-hidden="true">${esc(person.initials)}</span>`;
   function detail(label, value) { return `<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`; }
-  function amountForm(action, value = "", label = "Valor", help = "") {
-    return `<form data-form="${action}" class="bank-form" novalidate><label for="bank-amount">${label}</label><div class="bank-amount-input"><span>R$</span><input id="bank-amount" name="amount" type="text" inputmode="decimal" maxlength="14" autocomplete="off" placeholder="0,00" value="${esc(value)}" aria-describedby="bank-amount-help bank-form-error" required /></div><p class="bank-muted" id="bank-amount-help">${help}</p><div class="bank-quick-values">${[10,20,50].map(n=>button(`R$ ${n}`,"quick-amount","chip",`data-cents="${n*100}"`)).join("")}</div><p id="bank-form-error" class="bank-field-error" role="alert" hidden></p><button type="submit" class="bank-button is-primary">Continuar</button></form>`;
+  function amountForm(action, value = "", label = "Valor", help = "", command = "Continuar") {
+    return `<form data-form="${action}" class="bank-form" novalidate><label for="bank-amount">${label}</label><div class="bank-amount-input"><span>R$</span><input id="bank-amount" name="amount" type="text" inputmode="decimal" maxlength="14" autocomplete="off" placeholder="0,00" value="${esc(value)}" aria-describedby="bank-amount-help bank-form-error" required /></div><p class="bank-muted" id="bank-amount-help">${help}</p><div class="bank-quick-values">${[10,20,50].map(n=>button(`R$ ${n}`,"quick-amount","chip",`data-cents="${n*100}"`)).join("")}</div><p id="bank-form-error" class="bank-field-error" role="alert" hidden></p><button type="submit" class="bank-button is-primary">${command}</button></form>`;
   }
   function renderWelcome() {
     return `<section class="pix-screen bank-welcome"><img class="bank-welcome-logo" src="${href("img/pix/banco-unapi-logo.svg")}" alt="Banco UnAPI" /><div class="bank-welcome-main"><span class="bank-overline">SEU BANCO, PERTO DE VOCÊ</span>${heading("Olá, Maria.")}<p>Que bom ter você por aqui.</p><div class="bank-login-person">${avatar(contacts.own)}<span><strong>Maria Oliveira</strong><small>Minha conta</small></span>${icon("lock")}</div>${button("Entrar na minha conta","enter-bank")}</div><span class="bank-welcome-signature">UnAPI <span>UFMS</span></span></section>`;
   }
   function transactionRows(items, compact = false) {
     if (!items.length) return '<p class="bank-empty">Nenhuma movimentação neste filtro.</p>';
-    return `<div class="bank-transactions">${items.map(item=>`<button type="button" class="bank-transaction" data-action="transaction" data-id="${item.id}"><span class="bank-transaction-icon ${item.direction==="in" ? "is-in" : ""}">${icon(item.direction==="in" ? "down" : "up")}</span><span class="bank-transaction-copy"><strong>${esc(item.name)}</strong><small>${esc(item.description)}${compact ? "" : ` · ${date(item.date)}`}</small></span><span class="bank-transaction-value ${item.direction==="in" ? "is-in" : ""}">${account.snapshot().hiddenBalance ? "••••" : `${item.direction==="in" ? "+" : "−"} ${money(item.amountCents)}`}</span></button>`).join("")}</div>`;
+    return `<div class="bank-transactions">${items.map(item=>`<button type="button" class="bank-transaction" data-action="transaction" data-id="${item.id}"><span class="bank-transaction-icon ${item.direction==="in" ? "is-in" : ""}">${icon(item.direction==="in" ? "down" : "up")}</span><span class="bank-transaction-copy"><strong>${esc(item.name)}</strong><small>${esc(item.description)}${compact ? "" : ` · ${date(item.date)}`}</small></span><span class="bank-transaction-value ${item.direction==="in" ? "is-in" : ""}">${account.snapshot().hiddenBalance ? '<span aria-label="Valor oculto">••••</span>' : `${item.direction==="in" ? "+" : "−"} ${money(item.amountCents)}`}</span></button>`).join("")}</div>`;
   }
   function renderHome() {
     const bank=account.snapshot();
-    return `<section class="pix-screen bank-home"><header class="bank-home-header"><img src="${href("img/pix/banco-unapi-logo.svg")}" alt="Banco UnAPI" /><button type="button" class="bank-profile-button" data-action="profile" aria-label="Minha conta, Maria Oliveira">${avatar(contacts.own)}</button></header><div class="bank-home-scroll"><div class="bank-greeting"><span>Bom ter você aqui,</span>${heading("Maria")}</div><section class="bank-balance" aria-label="Saldo em conta"><div class="bank-balance-label"><span>Saldo disponível</span><button type="button" class="bank-icon-button" data-action="toggle-balance" aria-label="${bank.hiddenBalance ? "Mostrar" : "Ocultar"} valores" aria-pressed="${bank.hiddenBalance}">${icon(bank.hiddenBalance ? "eyeOff":"eye")}</button></div><strong>${displayMoney(bank.balanceCents)}</strong><button type="button" data-action="navigate" data-screen="statement">Ver extrato ${icon("chevron")}</button></section><div class="bank-shortcuts">${[["pix","Pix","pix-menu"],["pay","Pagar","pay"],["down","Receber","receive"],["reserve","Guardar","reserve"]].map(([symbol,label,screen])=>`<button type="button" data-action="navigate" data-screen="${screen}"><span>${icon(symbol)}</span><strong>${label}</strong></button>`).join("")}</div><button type="button" class="bank-invoice-preview" data-action="navigate" data-screen="invoice"><span class="bank-row-icon">${icon("card")}</span><span><small>Fatura do cartão</small><strong>${bank.card.invoiceCents ? displayMoney(bank.card.invoiceCents) : "Fatura paga"}</strong></span>${icon("chevron")}</button><section class="bank-section"><div class="bank-section-title"><h2>Últimas movimentações</h2><button type="button" data-action="navigate" data-screen="statement">Ver todas</button></div>${transactionRows(bank.transactions.slice(0,2),true)}</section></div>${nav("home")}</section>`;
+    const unread=bank.notifications.filter(item=>!item.read).length;
+    const pending=bank.scheduledPayments.filter(item=>item.status==="pending").sort((a,b)=>a.date.localeCompare(b.date))[0];
+    const reminder=pending ? row("Próximo pagamento",`${daily.calendarDate(pending.date)} · ${bank.bills.find(b=>b.id===pending.billId).name}`,"schedule","calendar",`data-id="${pending.id}"`) : "";
+    return `<section class="pix-screen bank-home">
+      <header class="bank-home-header"><img src="${href("img/pix/banco-unapi-logo.svg")}" alt="Banco UnAPI" /><div class="bank-home-tools"><button type="button" class="bank-icon-button bank-notice-button" data-action="notifications" aria-label="Notificações${unread ? `, ${unread} não lidas` : ""}" title="Notificações">${icon("bell")}${unread ? '<span class="bank-unread-dot" aria-hidden="true"></span>' : ""}</button><button type="button" class="bank-profile-button" data-action="profile" aria-label="Minha conta, Maria Oliveira">${avatar(contacts.own)}</button></div></header>
+      <div class="bank-home-scroll">
+        <div class="bank-greeting"><span>Bom ter você aqui,</span>${heading("Maria")}</div>
+        <section class="bank-balance" aria-label="Saldo em conta"><div class="bank-balance-label"><span>Saldo disponível</span><button type="button" class="bank-icon-button" data-action="toggle-balance" aria-label="${bank.hiddenBalance ? "Mostrar" : "Ocultar"} valores" aria-pressed="${bank.hiddenBalance}">${icon(bank.hiddenBalance ? "eyeOff":"eye")}</button></div><strong>${displayMoney(bank.balanceCents)}</strong><button type="button" data-action="navigate" data-screen="statement">Ver extrato ${icon("chevron")}</button></section>
+        <div class="bank-shortcuts">${[["pix","Pix","pix-menu"],["pay","Pagar","pay"],["down","Receber","receive"],["reserve","Guardar","reserve"]].map(([symbol,label,screen])=>`<button type="button" data-action="navigate" data-screen="${screen}"><span>${icon(symbol)}</span><strong>${label}</strong></button>`).join("")}</div>
+        ${row("Comprovantes","Consultar pagamentos e transferências","navigate","receipt",'data-screen="receipts"')}
+        ${reminder}
+        <button type="button" class="bank-invoice-preview" data-action="navigate" data-screen="invoice"><span class="bank-row-icon">${icon("card")}</span><span><small>Fatura do cartão</small><strong>${bank.card.invoiceCents ? displayMoney(bank.card.invoiceCents) : "Fatura paga"}</strong></span>${icon("chevron")}</button>
+        <section class="bank-section"><div class="bank-section-title"><h2>Últimas movimentações</h2><button type="button" data-action="navigate" data-screen="statement">Ver todas</button></div>${transactionRows(bank.transactions.slice(0,2),true)}</section>
+      </div>${nav("home")}</section>`;
   }
   function renderPixMenu() {
     return shell("Pix",`${heading("Seu Pix, do seu jeito.")}<div class="bank-pix-grid">${[["key","Transferir","choose-key"],["qr","Ler QR Code","scan"],["copy","Copia e Cola","copy"],["down","Receber Pix","receive"]].map(([symbol,title,action])=>`<button type="button" data-action="${action}" class="bank-pix-tile">${icon(symbol)}<strong>${title}</strong></button>`).join("")}</div><div class="bank-section-title"><h2>Seus contatos</h2></div><div class="bank-contacts">${contactIds.map(id=>`<button type="button" data-action="contact" data-id="${id}">${avatar(contacts[id])}<span>${esc(contacts[id].shortName)}</span></button>`).join("")}</div>${row("Minhas chaves","Gerenciar chaves Pix","keys","key")}`,"","pix-menu");
@@ -95,7 +110,9 @@
     return shell(draft.kind==="pix" ? "Conferir Pix":"Conferir pagamento",`${heading("Confira os dados")}<div class="bank-review-total"><small>Você vai pagar</small><strong>${money(draft.amountCents)}</strong></div><div class="bank-recipient">${avatar(draft.recipient)}<div><small>Destinatário</small><strong>${esc(draft.recipient.name)}</strong></div></div><dl class="bank-details">${detail(draft.recipient.documentLabel,draft.recipient.document)}${draft.kind==="pix" && draft.source==="Chave Pix" ? detail("Chave Pix",draft.recipient.key):""}${detail("Forma de pagamento",draft.source)}${detail("Quando","Agora")}</dl>`,`${button("Cancelar","cancel-payment","secondary")}${button("Continuar","continue-review")}`);
   }
   function renderConfirm() {
-    return shell("Confirmar pagamento",`${heading("Tudo certo para pagar?")}<div class="bank-confirm-lock">${icon("lock")}</div><p class="bank-confirm-value">${money(state.draft.amountCents)}</p><p class="bank-confirm-name">para <strong>${esc(state.draft.recipient.name)}</strong></p><dl class="bank-details">${detail("Debitar de","Saldo em conta")}${detail("Disponível",money(account.snapshot().balanceCents))}</dl>`,`${button("Voltar","back","secondary")}${button("Confirmar pagamento","confirm-payment")}`);
+    const draft=state.draft,scheduled=Boolean(draft.scheduledDate);
+    const bill=draft.kind==="bill"&&account.snapshot().bills.find(item=>item.id===draft.billId);
+    return shell(scheduled ? "Confirmar agendamento":"Confirmar pagamento",`${heading(scheduled ? "Tudo certo para agendar?":"Tudo certo para pagar?")}${bill ? "":`<div class="bank-confirm-lock">${icon("lock")}</div>`}<p class="bank-confirm-value">${money(draft.amountCents)}</p><p class="bank-confirm-name">para <strong>${esc(draft.recipient.name)}</strong></p><dl class="bank-details">${detail("Quando",scheduled ? daily.calendarDate(draft.scheduledDate):"Agora")}${bill ? detail("Conta",bill.name)+detail("Vencimento",daily.calendarDate(bill.dueDate))+detail("CNPJ",bill.document):""}${detail("Debitar de","Saldo em conta")}${detail("Disponível",money(account.snapshot().balanceCents))}</dl>${scheduled ? '<p class="bank-muted">O saldo será usado na data agendada. Nenhum valor sai da conta agora.</p>':""}<p id="bank-payment-error" class="bank-field-error" role="alert" tabindex="-1" hidden></p>`,`${button("Voltar","back","secondary")}${button(scheduled ? "Confirmar agendamento":"Confirmar pagamento","confirm-payment")}`);
   }
   function renderResult() {
     const transaction=account.snapshot().transactions.find(item=>item.id===state.transactionId);
@@ -104,15 +121,7 @@
   }
   function renderReceipt() {
     const transaction=account.snapshot().transactions.find(item=>item.id===state.transactionId);
-    return shell("Comprovante",`<article class="bank-receipt"><img src="${href("img/pix/banco-unapi-logo.svg")}" alt="Banco UnAPI" />${heading(transaction.description)}<strong class="bank-receipt-amount">${money(transaction.amountCents)}</strong><span class="bank-status">Concluído</span><dl class="bank-details">${detail(transaction.direction==="in" ? "Origem":"Destinatário",transaction.name)}${detail(transaction.documentLabel,transaction.document)}${detail("Data e hora",fullDate(transaction.date))}${detail("Forma de pagamento",transaction.source)}${detail("Identificador",transaction.id)}</dl><small class="bank-receipt-footnote">Sem valor financeiro</small></article>`,button("Voltar ao início","go-home"));
-  }
-  function renderStatement() {
-    const bank=account.snapshot(),items=bank.transactions.filter(item=>state.filter==="all"||item.direction===state.filter);
-    return shell("Extrato",`<div class="bank-statement-balance"><span>Saldo em conta</span><strong>${displayMoney(bank.balanceCents)}</strong><button class="bank-icon-button" type="button" data-action="toggle-balance" aria-label="${bank.hiddenBalance ? "Mostrar":"Ocultar"} valores">${icon(bank.hiddenBalance ? "eyeOff":"eye")}</button></div>${heading("Movimentações")}<div class="bank-filters" aria-label="Filtrar movimentações">${[["all","Todas"],["in","Entradas"],["out","Saídas"]].map(([filter,label])=>button(label,"filter","chip",`data-filter="${filter}" aria-pressed="${filter===state.filter}"`)).join("")}</div>${transactionRows(items)}`,"","statement");
-  }
-  function renderPay() {
-    const paid=account.snapshot().paidBills;
-    return shell("Pagamentos",`${heading("Suas contas em dia.")}${row("Digitar código","Pagar uma conta pelo código","bill-code","pay")}<div class="bank-section-title"><h2>Contas disponíveis</h2></div><div class="bank-bills">${bills.map(bill=>`<button type="button" class="bank-bill" data-action="bill" data-id="${bill.id}" ${paid.includes(bill.id) ? "disabled":""}><span class="bank-row-icon">${icon("receipt")}</span><span><strong>${esc(bill.name)}</strong><small>${paid.includes(bill.id) ? "Paga":`Vencimento · dia ${bill.dueDay}`}</small></span><strong>${money(bill.amountCents)}</strong></button>`).join("")}</div>`);
+    return shell("Comprovante",`<article class="bank-receipt"><img src="${href("img/pix/banco-unapi-logo.svg")}" alt="Banco UnAPI" />${heading(transaction.description)}<strong class="bank-receipt-amount">${money(transaction.amountCents)}</strong><span class="bank-status">Concluído</span><dl class="bank-details">${detail(transaction.direction==="in" ? "Origem":"Destinatário",transaction.name)}${detail(transaction.documentLabel,transaction.document)}${transaction.billName ? detail("Conta",transaction.billName)+detail("Vencimento",daily.calendarDate(transaction.dueDate))+detail("Código",transaction.code):""}${detail("Data e hora",fullDate(transaction.date))}${detail("Forma de pagamento",transaction.source)}${detail("Identificador",transaction.id)}</dl><small class="bank-receipt-footnote">Treinamento UnAPI · Sem valor financeiro</small></article>`,`${button("Copiar comprovante","copy-receipt","secondary")}${button("Voltar ao início","go-home")}`);
   }
   function renderBillCode() {
     return shell("Código da conta",`${heading("Qual conta você quer pagar?")}<form class="bank-form" data-form="bill-code" novalidate><label for="bank-code">Código de pagamento</label><input id="bank-code" class="bank-field" name="code" autocomplete="off" maxlength="100" placeholder="Digite ou cole o código" aria-describedby="bank-form-error" /><p id="bank-form-error" class="bank-field-error" role="alert" hidden></p>${row("Água e saneamento",bills[0].code,"use-bill-code","receipt")}<button type="submit" class="bank-button is-primary">Continuar</button></form>`);
@@ -155,11 +164,11 @@
   }
   function renderCards() {
     const card=account.snapshot().card;
-    return shell("Meus cartões",`${heading("Cartão UnAPI")}${cardVisual()}<div class="bank-card-status">${icon(card.locked ? "lock":"check")}<span>${card.locked ? "Cartão bloqueado temporariamente":"Pronto para usar"}</span></div>${switchRow("Bloquear cartão","locked",card.locked,"Você pode desbloquear a qualquer momento.")}<div class="bank-list">${row("Fatura atual",card.invoiceCents ? money(card.invoiceCents):"Paga","invoice","receipt")}${row("Limite disponível",money(card.limitCents-card.invoiceCents),"limit","card")}${row("Cartão virtual",card.virtual ? "Ver cartão virtual":"Criar cartão virtual","virtual","card")}${row("Configurações","Compras on-line e aproximação","card-settings","lock")}</div>`,"","cards");
+    return shell("Meus cartões",`${heading("Cartão UnAPI")}${cardVisual()}<div class="bank-card-status">${icon(card.locked ? "lock":"check")}<span>${card.locked ? "Cartão bloqueado temporariamente":"Pronto para usar"}</span></div>${switchRow("Bloquear cartão","locked",card.locked,"Você pode desbloquear a qualquer momento.")}<div class="bank-list">${row("Não encontro meu cartão","Bloqueio temporário","card-help","lock")}${row("Fatura atual",card.invoiceCents ? money(card.invoiceCents):"Paga","invoice","receipt")}${row("Limite disponível",money(card.limitCents-card.invoiceCents),"limit","card")}${row("Cartão virtual",card.virtual ? "Ver cartão virtual":"Criar cartão virtual","virtual","card")}${row("Configurações","Compras on-line e aproximação","card-settings","lock")}</div>`,"","cards");
   }
   function renderInvoice() {
-    const card=account.snapshot().card;
-    return shell("Fatura",`${heading(card.invoiceCents ? "Fatura atual":"Fatura paga")}<p class="bank-invoice-total">${money(card.invoiceCents)}</p><span class="bank-status">${card.invoiceCents ? "Vencimento · dia 20":"Tudo em dia"}</span><div class="bank-section-title"><h2>Compras deste mês</h2></div><div class="bank-purchase-list">${[["Mercado da Praça",8990],["Farmácia da Oficina",6500],["Livraria UnAPI",3000]].map(([name,cents])=>`<div><span>${name}</span><strong>${money(cents)}</strong></div>`).join("")}</div><dl class="bank-details">${detail("Total de compras",money(18490))}${detail("Pagamentos",card.invoiceCents ? money(0):money(18490))}</dl>`,card.invoiceCents ? button("Pagar fatura","pay-invoice"):button("Voltar aos cartões","cards","secondary"));
+    const bank=account.snapshot(),card=bank.card,total=bank.cardPurchases.reduce((sum,item)=>sum+item.amountCents,0);
+    return shell("Fatura",`${heading(card.invoiceCents ? "Fatura atual":"Fatura paga")}<p class="bank-invoice-total">${money(card.invoiceCents)}</p><span class="bank-status">${card.invoiceCents ? `Vencimento · ${daily.calendarDate(bank.invoiceDueDate)}`:"Tudo em dia"}</span><div class="bank-section-title"><h2>Compras desta fatura</h2></div><div class="bank-purchase-list">${bank.cardPurchases.map(item=>row(item.name,`${money(item.amountCents)} · ${date(item.date)}${item.recognized ? " · Reconhecida":""}`,"purchase","card",`data-id="${item.id}"`)).join("")}</div><dl class="bank-details">${detail("Total de compras",money(total))}${detail("Pagamentos",money(total-card.invoiceCents))}</dl>`,card.invoiceCents ? button("Pagar fatura","pay-invoice"):button("Ver comprovante","invoice-receipt"));
   }
   function renderLimit() {
     const card=account.snapshot().card;
@@ -179,15 +188,15 @@
   }
   function renderReserveAmount() {
     const bank=account.snapshot(),withdraw=state.reserveDirection==="withdraw";
-    return shell(withdraw ? "Resgatar":"Guardar dinheiro",`${heading(withdraw ? "Quanto quer resgatar?":"Quanto quer guardar?")}${amountForm("reserve","","Valor",`Disponível: ${money(withdraw ? bank.reserveCents:bank.balanceCents)}`)}`);
+    return shell(withdraw ? "Resgatar":"Guardar dinheiro",`${heading(withdraw ? "Quanto quer resgatar?":"Quanto quer guardar?")}${amountForm("reserve","","Valor",`Disponível: ${money(withdraw ? bank.reserveCents:bank.balanceCents)}`,withdraw ? "Confirmar resgate":"Confirmar valor guardado")}`);
   }
   function renderProfile() {
     return shell("Minha conta",`<div class="bank-profile">${avatar(contacts.own)}${heading(contacts.own.name)}<span>Conta pessoal</span></div><dl class="bank-details">${detail("Agência","0001")}${detail("Conta","•••• 2026-0")}${detail("CPF",contacts.own.document)}${detail("E-mail",contacts.own.key)}</dl>${row("Minhas chaves Pix","Recebimentos na sua conta","keys","key")}${row("Ajuda","Perguntas frequentes","help","help")}`,button("Sair da conta","logout","secondary"));
   }
   function renderHelp() {
-    return shell("Ajuda",`${heading("Como podemos ajudar?")}<div class="bank-help-list">${[["Onde encontro um comprovante?","Abra o Extrato e toque na movimentação que deseja consultar."],["Como bloqueio meu cartão?","Em Cartões, ative Bloquear cartão. Você pode desfazer essa ação no mesmo lugar."],["Como recebo um Pix?","Abra Receber, informe o valor e gere seu código."],["Posso cancelar um pagamento?","Sim, antes de confirmar. Na conferência, toque em Cancelar."]].map(([q,a])=>`<details><summary>${q}</summary><p>${a}</p></details>`).join("")}</div>`);
+    return shell("Ajuda",`${heading("Como podemos ajudar?")}<div class="bank-help-list">${[["Onde encontro um comprovante?","Em Comprovantes ou Extrato, busque o nome da empresa e abra a movimentação."],["Agendar é o mesmo que pagar?","Não. O valor só sai da conta na data agendada, se houver saldo suficiente. Consulte a situação em Pagar, Agendamentos."],["Como cancelo um agendamento?","Abra Pagar, Agendamentos e escolha o pagamento. Enquanto estiver agendado, você pode cancelar. Um pagamento concluído não pode ser cancelado por essa opção."],["Como bloqueio meu cartão?","Em Cartões, ative Bloquear cartão. Você pode desfazer essa ação no mesmo lugar. O bloqueio não cancela compras já feitas."],["Como recebo um Pix?","Abra Receber, informe o valor e gere seu código. Na oficina, o monitor pode registrar a entrada pelo painel de treinamento."],["Posso cancelar um pagamento?","Antes de confirmar, use Voltar ou Cancelar. Depois de concluído, o pagamento permanece no extrato."]].map(([q,a])=>`<details><summary>${q}</summary><p>${a}</p></details>`).join("")}</div>`);
   }
-  function renderCancelled() { return shell("Pagamento cancelado",`<div class="bank-result"><span class="bank-result-check is-neutral">${icon("close")}</span>${heading("Pagamento cancelado")}<p>Seu saldo permanece o mesmo.</p></div>`,`${button("Voltar ao início","go-home")}${button("Fazer outro Pix","another-pix","secondary")}`); }
+  function renderCancelled() { return shell("Pagamento cancelado",`<div class="bank-result"><span class="bank-result-check is-neutral">${icon("close")}</span>${heading("Pagamento cancelado")}<p>Seu saldo permanece o mesmo.</p></div>`,`${button("Voltar ao início","go-home")}${state.draft?.kind==="bill"||state.draft?.kind==="invoice" ? button("Ver pagamentos","pay","secondary"):button("Fazer outro Pix","another-pix","secondary")}`); }
   function renderWarning() { return shell("Revisar pagamento",`${heading("Os dados não conferem")}<div class="bank-warning">${icon("lock")}<p>Não foi possível continuar com este pagamento.</p></div><dl class="bank-details">${detail("Destinatário",state.draft.recipient.name)}${detail("Valor",money(state.draft.amountCents))}</dl>`,`${button("Cancelar Pix","cancel-payment")}${button("Voltar e conferir","back","secondary")}`); }
   function renderInvalid() { return shell("Banco UnAPI",`${heading("Cobrança não encontrada")}<p class="bank-muted">Confira o código e tente novamente.</p>`,button("Ir para minha conta","go-home")); }
   function renderWorkshop() {
@@ -195,7 +204,8 @@
     if(state.workshopScenario){const s=scenarios[state.workshopScenario];return shell("QR Codes da dinâmica",`<div class="bank-projector"><div><span class="bank-overline">${s.shortLabel}</span>${heading("Confira antes de pagar")}<p class="bank-projector-task">${esc(s.projectionInstruction)}</p><p class="bank-muted">Use a câmera normal do celular para abrir a cobrança.</p>${button("Outros cenários","workshop-list","secondary")}</div><div class="bank-projected-qr">${createQrSvg(s.id)}<p>${esc(buildScenarioUrl(s.id))}</p></div></div>`);}
     return shell("Modo oficina",`${heading("QR Codes da dinâmica")}<p class="bank-muted">${esc(notice.message)}</p><div class="bank-scenarios">${Object.values(scenarios).map(s=>`<article><span class="bank-overline">${s.shortLabel}</span><h2>${esc(s.title)}</h2><p>${esc(s.projectionInstruction)}</p>${button("Projetar QR Code","project-qr","primary",`data-id="${s.id}" ${notice.blocked ? "disabled":""}`)}</article>`).join("")}</div>`);
   }
-  const views={welcome:renderWelcome,home:renderHome,"pix-menu":renderPixMenu,"key-type":renderKeyType,"key-input":renderKeyInput,amount:renderAmount,review:renderReview,confirm:renderConfirm,success:renderResult,receipt:renderReceipt,statement:renderStatement,pay:renderPay,"bill-code":renderBillCode,copy:renderCopy,scan:renderScan,charge:renderCharge,receive:renderReceive,"receive-code":renderReceiveCode,keys:renderKeys,cards:renderCards,invoice:renderInvoice,limit:renderLimit,virtual:renderVirtual,"card-settings":renderCardSettings,reserve:renderReserve,"reserve-amount":renderReserveAmount,profile:renderProfile,help:renderHelp,cancelled:renderCancelled,warning:renderWarning,invalid:renderInvalid,workshop:renderWorkshop};
+  const daily=window.createBancoUnapiDaily({getAccount:()=>account,getState:()=>state,shell,heading,button,row,detail,icon,money,date,fullDate,esc,transactionRows,displayMoney});
+  const views={welcome:renderWelcome,home:renderHome,"pix-menu":renderPixMenu,"key-type":renderKeyType,"key-input":renderKeyInput,amount:renderAmount,review:renderReview,confirm:renderConfirm,success:renderResult,receipt:renderReceipt,"bill-code":renderBillCode,copy:renderCopy,scan:renderScan,charge:renderCharge,receive:renderReceive,"receive-code":renderReceiveCode,keys:renderKeys,cards:renderCards,invoice:renderInvoice,limit:renderLimit,virtual:renderVirtual,"card-settings":renderCardSettings,reserve:renderReserve,"reserve-amount":renderReserveAmount,profile:renderProfile,help:renderHelp,cancelled:renderCancelled,warning:renderWarning,invalid:renderInvalid,workshop:renderWorkshop,...daily.views};
   function updateContext() {
     const task=document.getElementById("pix-context-task"),feedback=document.getElementById("pix-context-feedback");
     const scenario=!["workshop","charge"].includes(state.screen) && state.draft?.scenario && scenarios[state.draft.scenario];
@@ -203,10 +213,15 @@
     feedback.hidden=!state.feedback||state.screen==="workshop";feedback.textContent=state.feedback;
     document.getElementById("pix-credit-receipt").hidden=!state.receiveReady||state.receiveCredited||state.screen==="workshop";
     document.getElementById("pix-workshop-mode").hidden=state.participantRoute;
+    const next=account.snapshot().scheduledPayments.filter(item=>item.status==="pending").sort((a,b)=>a.date.localeCompare(b.date))[0];
+    const advance=document.getElementById("pix-advance-date");
+    advance.hidden=state.participantRoute||!next;
+    advance.textContent=next ? `Simular dia ${daily.calendarDate(next.date)}`:"Simular data agendada";
+    document.getElementById("pix-simulation-date").textContent=`Data da simulação: ${daily.calendarDate(account.snapshot().today)}`;
   }
   function render() {
     clearTimeout(toastTimer);document.body.dataset.pixScreen=state.screen;
-    document.title=state.screen==="charge" ? "Cobrança Pix · Banco UnAPI" : state.screen==="workshop" ? "QR Codes da dinâmica · Banco UnAPI" : "Banco UnAPI · Pix na Prática";
+    document.title=state.screen==="charge" ? "Cobrança Pix · Banco UnAPI" : state.screen==="workshop" ? "QR Codes da dinâmica · Banco UnAPI" : "Banco UnAPI · Dia a dia";
     app.innerHTML=(views[state.screen]||renderInvalid)();updateContext();
   }
   function go(screen,replace=false) {
@@ -218,6 +233,7 @@
   }
   function back() {
     if(state.screen==="workshop"&&state.workshopScenario){state.workshopScenario=null;render();return;}
+    if(["home","welcome"].includes(state.screen)&&!state.history.length)return;
     go(state.history.pop()||"home",true);
   }
   function startPix(id,cents=null,source="Chave Pix",scenario=null) {
@@ -235,30 +251,31 @@
   function openScenario(id) {
     if(!Object.hasOwn(scenarios,id)){go("invalid");return;}
     const s=scenarios[id];state.feedback="";
-    state.pendingScenario=null;state.draft={kind:"pix",recipient:scenarioRecipient(id,s),amountCents:s.shownAmount*100,source:"QR Code",scenario:id};go("review");
+    state.pendingScenario=id;state.draft={kind:"pix",recipient:scenarioRecipient(id,s),amountCents:s.shownAmount*100,source:"QR Code",scenario:id};go("review");
   }
   function openBill(id) {
-    const bill=bills.find(item=>item.id===id);
-    if(!bill||account.snapshot().paidBills.includes(id)){toast("Esta conta já foi paga.");return;}
-    state.pendingScenario=null;state.draft={kind:"bill",billId:id,amountCents:bill.amountCents,source:"Saldo em conta",recipient:{name:bill.company,initials:bill.initials,documentLabel:"CNPJ",document:bill.document}};state.feedback="";go("review");
+    const bill=account.snapshot().bills.find(item=>item.id===id);
+    if(!bill){toast("Conta não encontrada.");return;}
+    state.billId=id;state.pendingScenario=null;state.draft=null;state.feedback="";go("bill-detail");
   }
   function commitPayment() {
     if(state.screen!=="confirm"||state.busy||!state.draft)return;state.busy=true;
     try {
       const draft=state.draft;
       if(draft.scenario&&scenarios[draft.scenario].correctAction==="cancel")throw new Error("Revise os dados do pagamento.");
+      if(draft.kind==="bill"&&draft.scheduledDate){const scheduled=account.scheduleBill(draft.billId,draft.scheduledDate);state.scheduleId=scheduled.id;state.history=["home","pay","schedules"];go("schedule",true);return;}
       const transaction=draft.kind==="bill" ? account.payBill(draft.billId):draft.kind==="invoice" ? account.payInvoice():account.payPix(draft.recipient.id,draft.amountCents,draft.source);
       state.transactionId=transaction.id;state.feedback=draft.scenario ? scenarios[draft.scenario].successFeedback:"";state.history=["home"];go("success",true);
-    }catch(error){toast(error.message);}finally{state.busy=false;}
+    }catch(error){const message=app.querySelector("#bank-payment-error");if(message){message.hidden=false;message.textContent=error.message;message.focus();}else toast(error.message);}finally{state.busy=false;}
   }
   function formError(form,message) {
     const error=form.querySelector("#bank-form-error");if(error){error.hidden=false;error.textContent=message;}
-    const field=form.querySelector("input,textarea");field?.setAttribute("aria-invalid","true");field?.focus();announce(message);
+    const field=form.querySelector('input[type="date"]:not(:disabled),input:not([type="radio"]),textarea')||form.querySelector("input");field?.setAttribute("aria-invalid","true");field?.focus();announce(message);
   }
-  async function copyText(text) {
+  async function copyText(text, fallback = "Pronto para colar no Banco UnAPI.") {
     state.clipboard=text;
     try {if(!navigator.clipboard?.writeText)throw Error();await navigator.clipboard.writeText(text);toast("Copiado.");}
-    catch {toast("Pronto para colar no Banco UnAPI.");}
+    catch {toast(fallback);}
   }
   app.addEventListener("submit",event=>{
     const form=event.target;if(!form.dataset.form)return;event.preventDefault();
@@ -279,6 +296,15 @@
       if(type==="bill-code"){
         const bill=bills.find(item=>item.code===String(data.get("code")).trim().toUpperCase());if(!bill)throw Error("Código não encontrado. Confira o código da conta.");openBill(bill.id);
       }
+      if(type==="bill-when"){
+        const bill=account.snapshot().bills.find(item=>item.id===state.billId);
+        state.paymentWhen=String(data.get("when"));state.paymentDate=String(data.get("date")||"");
+        const later=state.paymentWhen==="later";
+        if(later&&(!state.paymentDate||state.paymentDate<=account.snapshot().today||state.paymentDate>bill.dueDate))throw Error("Escolha uma data futura até o vencimento da conta.");
+        state.draft={kind:"bill",billId:bill.id,amountCents:bill.amountCents,source:"Saldo em conta",scheduledDate:later ? state.paymentDate:null,recipient:{name:bill.company,initials:bill.initials,documentLabel:"CNPJ",document:bill.document}};
+        go("confirm");
+      }
+      if(type==="history-search"){state.query=String(data.get("query")||"");app.querySelector("#bank-history-results").innerHTML=daily.historyResults();}
       if(type==="copy"){
         const code=String(data.get("code")||"").trim();state.copyCode=code;
         if(code==="UNAPI:CANTINA:1200")startPix("document",1200,"Pix Copia e Cola");
@@ -289,12 +315,24 @@
   });
   app.addEventListener("input",event=>{
     const form=event.target.closest("form");event.target.removeAttribute("aria-invalid");const error=form?.querySelector("#bank-form-error");if(error)error.hidden=true;
+    if(event.target.id==="bank-history-search"){state.query=event.target.value;app.querySelector("#bank-history-results").innerHTML=daily.historyResults();}
+  });
+  app.addEventListener("change",event=>{
+    if(event.target.name==="when"){
+      state.paymentWhen=event.target.value;
+      const scheduled=state.paymentWhen==="later";
+      app.querySelector("#bank-schedule-fields").hidden=!scheduled;
+      app.querySelector("#bank-payment-date").disabled=!scheduled;
+      if(scheduled)app.querySelector("#bank-payment-date").focus();
+    }
+    if(event.target.id==="bank-history-period"){state.historyPeriod=event.target.value;app.querySelector("#bank-history-results").innerHTML=daily.historyResults();}
+    if(event.target.id==="bank-scan-bill"){state.scanBillId=event.target.value;render();app.querySelector("#bank-scan-bill").focus();}
   });
   app.addEventListener("click",async event=>{
     const control=event.target.closest("[data-action]");if(!control||!app.contains(control)||control.disabled)return;
     const {action,id,screen,field,cents,filter}=control.dataset;
     if(action==="enter-bank"||action==="go-home"){state.history=[];state.pendingScenario=null;state.draft=null;state.feedback="";go("home",true);}
-    if(action==="navigate"){state.history=["home"];state.pendingScenario=null;state.draft=null;state.feedback="";go(screen,true);}
+    if(action==="navigate"){state.history=screen==="home" ? []:["home"];state.pendingScenario=null;state.draft=null;state.feedback="";if(["statement","receipts"].includes(screen)){state.query="";state.filter="all";state.historyPeriod="all";}go(screen,true);}
     if(action==="back")back();
     if(action==="continue-charge"&&state.pendingScenario)openScenario(state.pendingScenario);
     if(action==="cancel-charge"){
@@ -315,10 +353,35 @@
     if(action==="another-pix"){state.pendingScenario=null;state.draft=null;state.feedback="";state.history=["home"];go("pix-menu",true);}
     if(action==="view-receipt")go("receipt");
     if(action==="transaction"){state.transactionId=id;go("receipt");}
+    if(action==="copy-receipt"){
+      const transaction=account.snapshot().transactions.find(item=>item.id===state.transactionId);
+      const receipt=["BANCO UNAPI - COMPROVANTE DE TREINAMENTO","SEM VALOR FINANCEIRO",transaction.description,money(transaction.amountCents),transaction.name,`${transaction.documentLabel}: ${transaction.document}`,`Data: ${fullDate(transaction.date)}`,transaction.billName ? `Conta: ${transaction.billName}\nVencimento: ${daily.calendarDate(transaction.dueDate)}\nCódigo: ${transaction.code}`:"",`Forma: ${transaction.source}`,`Identificador: ${transaction.id}`].filter(Boolean).join("\n");
+      copyText(receipt,"Não foi possível copiar. O comprovante continua disponível nesta tela.");
+    }
     if(action==="filter"){state.filter=filter;render();app.querySelector(`[data-filter="${filter}"]`)?.focus();announce("Extrato filtrado.");}
     if(action==="toggle-balance"){account.toggleBalance();render();app.querySelector('[data-action="toggle-balance"]')?.focus();announce(account.snapshot().hiddenBalance ? "Valores ocultos.":"Valores visíveis.");}
-    if(["copy","scan","receive","keys","invoice","limit","virtual","card-settings","profile","help","cards","bill-code"].includes(action))go(action);
+    if(["copy","scan","receive","keys","invoice","limit","virtual","card-settings","profile","help","cards","bill-code","pay","bill-scan","schedules","notifications","card-help","reserve"].includes(action))go(action);
     if(action==="bill")openBill(id);
+    if(action==="bill-start"){state.paymentWhen="now";state.paymentDate="";go("bill-when");}
+    if(action==="scan-bill")openBill(state.scanBillId);
+    if(action==="schedule"){state.scheduleId=id;go("schedule");}
+    if(action==="cancel-schedule")go("cancel-schedule");
+    if(action==="confirm-cancel-schedule"){
+      try{account.cancelSchedule(state.scheduleId);state.history=["home","pay","schedules"];go("schedule",true);}
+      catch(error){toast(error.message);}
+    }
+    if(action==="purchase"){state.purchaseId=id;go("purchase");}
+    if(action==="recognize-purchase"){account.recognizePurchase(state.purchaseId);go("purchase",true);announce("Compra reconhecida.");}
+    if(action==="protect-card"){account.toggleCard("locked");go("card-help",true);announce(account.snapshot().card.locked ? "Cartão bloqueado temporariamente.":"Cartão desbloqueado.");}
+    if(action==="invoice-receipt"){state.transactionId=account.snapshot().transactions.find(item=>item.kind==="invoice").id;go("receipt");}
+    if(action==="notification"){
+      const item=account.snapshot().notifications.find(item=>item.id===id);
+      account.markNotificationRead(id);
+      if(item.kind==="bill")openBill(item.targetId);
+      if(item.kind==="purchase"){state.purchaseId=item.targetId;go("purchase");}
+      if(item.kind==="schedule"){state.scheduleId=item.targetId;go("schedule");}
+      if(item.kind==="transaction"){state.transactionId=item.targetId;go("receipt");}
+    }
     if(action==="use-bill-code"){app.querySelector("#bank-code").value=bills[0].code;app.querySelector("#bank-code").focus();}
     if(action==="use-copy-code"){app.querySelector("#bank-copy").value="UNAPI:CANTINA:1200";app.querySelector("#bank-copy").focus();}
     if(action==="paste"){
@@ -339,7 +402,7 @@
     if(action==="workshop-list"){state.workshopScenario=null;go("workshop",true);}
   });
   function reset() {
-    account=createAccount();state={screen:"welcome",history:[],draft:null,pendingScenario:null,workshopMode:false,participantRoute:false,keyType:"email",keyValue:"",filter:"all",transactionId:null,copyCode:"",clipboard:"",receiveCents:2000,receiveReady:false,receiveCredited:false,reserveDirection:"save",workshopScenario:null,feedback:"",busy:false};
+    account=createAccount();state={screen:"welcome",history:[],draft:null,pendingScenario:null,workshopMode:false,participantRoute:false,keyType:"email",keyValue:"",filter:"all",query:"",historyPeriod:"all",billId:null,scanBillId:"energy",scheduleId:null,purchaseId:null,paymentWhen:"now",paymentDate:"",logoUrl:href("img/pix/banco-unapi-logo.svg"),transactionId:null,copyCode:"",clipboard:"",receiveCents:2000,receiveReady:false,receiveCredited:false,reserveDirection:"save",workshopScenario:null,feedback:"",busy:false};
     const params=new URLSearchParams(location.search);
     state.workshopMode=params.get("modo")==="oficina";
     state.participantRoute=location.pathname.includes("/pix/qr")&&!state.workshopMode;
@@ -355,6 +418,13 @@
   document.getElementById("pix-credit-receipt").addEventListener("click",()=>{
     if(!state.receiveReady||state.receiveCredited)return;
     const transaction=account.receive(state.receiveCents);state.receiveCredited=true;state.transactionId=transaction.id;state.history=["home"];go("success",true);
+  });
+  document.getElementById("pix-advance-date").addEventListener("click",()=>{
+    try{
+      const results=account.advanceToNextSchedule();
+      state.history=["home","pay"];state.draft=null;state.feedback=`Data simulada: ${daily.calendarDate(account.snapshot().today)}. ${results.filter(item=>item.status==="completed").length} pagamento(s) realizado(s); ${results.filter(item=>item.status==="failed").length} não realizado(s).`;
+      go("schedules",true);announce(state.feedback);
+    }catch(error){announce(error.message);}
   });
   document.addEventListener("keydown",event=>{if(event.key==="Escape")back();});
   setupShell({device:document.getElementById("pix-device"),resetButton:document.getElementById("pix-reset"),fullscreenButton:document.getElementById("pix-fullscreen"),onReset:()=>{reset();go(state.screen,true);announce("Conta reiniciada.");}});
