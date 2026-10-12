@@ -405,3 +405,15 @@
     transition: none;
   }
 }
+
+/* Nova atividade: centraliza a última ficha quando há nove atividades. */
+@media (min-width: 1251px) {
+  .tool-row:nth-child(9):last-child { grid-column: 4 / span 2; }
+}
+@media (min-width: 561px) and (max-width: 860px) {
+  .tool-row:nth-child(9):last-child { grid-column: 1 / -1; width: calc(50% - 8px); justify-self: center; }
+}
+
+/* Ícone SVG do Celular na Prática, proporcional às demais capas. */
+.visual-celular .tool-cover-icon { width: 94px; height: 94px; }
+@media (max-width: 560px) { .visual-celular .tool-cover-icon { width: 72px; height: 72px; } }
